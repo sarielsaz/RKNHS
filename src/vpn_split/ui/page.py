@@ -32,6 +32,11 @@ from qfluentwidgets import (
     TableWidget,
 )
 
+from app.runtime_status_cache import (
+    get_cached_tunnel_status,
+    invalidate_dpi_status_cache,
+    invalidate_tunnel_status_cache,
+)
 from log.log import log
 from settings.store import (
     add_vpn_split_rule,
@@ -47,6 +52,8 @@ from settings.store import (
 )
 from ui.message_box_accessibility import set_message_box_button_accessibility
 from ui.pages.base_page import BasePage
+from ui.pulsing_dot import PulsingDot
+from ui.tech_style import style_inline_section_label
 from vpn_split.sync import (
     active_config_path,
     apply_vpn_split_sync,
@@ -57,7 +64,7 @@ from vpn_split.sync import (
     resolve_domain_rule,
     stop_vpn_system_tunnel,
 )
-from vpn_split.tunnel import format_tunnel_status, get_tunnel_status
+from vpn_split.tunnel import format_tunnel_status
 from vpn_split.ui.config_guide import VPN_SPLIT_CONF_GUIDE_EXAMPLE, VPN_SPLIT_CONF_GUIDE_STEPS
 from vpn_split.ui.domain_import_dialog import DomainListImportDialog
 
@@ -95,7 +102,7 @@ class VpnSplitPage(BasePage):
     def __init__(self, parent=None, *, restart_winws=None):
         super().__init__(
             "VPN Split",
-            "Домены через AmneziaWG, остальное — winws2 DPI",
+            "Отдельные сайты через VPN. YouTube и обычный обход — на главной странице.",
             parent,
             title_key="page.vpn_split.title",
             subtitle_key="page.vpn_split.subtitle",
@@ -106,11 +113,12 @@ class VpnSplitPage(BasePage):
         self._restart_winws = restart_winws
         self._status_timer = QTimer(self)
         self._status_timer.setInterval(4000)
-        self._status_timer.timeout.connect(self._refresh_tunnel_status)
+        self._status_timer.timeout.connect(lambda: self._refresh_tunnel_status(force=False))
         self._build_ui()
         self._reload_table()
-        self._refresh_tunnel_status()
-        self._status_timer.start()
+        # Do not start polling until the page is actually shown.
+        if self.isVisible():
+            self._start_status_polling(force_refresh=True)
 
     def _build_ui(self) -> None:
         self._hint_toggle = PushButton("Как это работает ▼", self.content)
@@ -118,15 +126,14 @@ class VpnSplitPage(BasePage):
         self.add_widget(self._hint_toggle)
 
         self._hint_body = CaptionLabel(
-            "1) Укажите ваш .conf из AmneziaWG (ключи остаются там же — RKNHS только читает файл).\n"
-            "2) Добавляйте домены (grok.com) — RKNHS резолвит IP.\n"
-            "3) «Применить» → обновляет DPI-исключения и active.conf.\n"
-            "4) «Обновить IP всех доменов» — только DNS, без полного Apply.\n"
-            "5) Обновите туннель в AmneziaWG при необходимости.\n\n"
-            "Не используйте «CLI туннель», если управляете VPN только через AmneziaWG — "
-            "эта кнопка создаёт Windows-службу, которую GUI Amnezia не отключает.\n\n"
-            "YouTube идёт через DPI, не через VPN. RKNHS сам перезапускает winws2 при "
-            "включении/выключении VPN — DPI-исключения действуют только пока туннель подключён.",
+            "1) Укажите ваш .conf из AmneziaWG — ключи остаются в файле, RKNHS только читает его.\n"
+            "2) Добавьте сайт (например grok.com) — программа найдёт его IP.\n"
+            "3) Нажмите «Применить» — обновится список маршрутов и файл active.conf.\n"
+            "4) «Обновить IP всех доменов» — только перепроверка DNS, без полного Apply.\n"
+            "5) Если туннель ведёте в AmneziaWG — обновите/переподключите его там.\n\n"
+            "Кнопка «Применить + CLI туннель» нужна редко: она поднимает Windows-службу, "
+            "которую приложение AmneziaWG само не выключает.\n\n"
+            "YouTube лучше оставлять на главной странице (обычный обход), а не в VPN Split.",
             self.content,
         )
         self._hint_body.setWordWrap(True)
@@ -154,38 +161,57 @@ class VpnSplitPage(BasePage):
 
         toggle_card = CardWidget(self.content)
         toggle_layout = QHBoxLayout(toggle_card)
-        toggle_layout.setContentsMargins(16, 12, 16, 12)
-        toggle_layout.addWidget(StrongBodyLabel("VPN Split включён", toggle_card))
+        toggle_layout.setContentsMargins(14, 10, 14, 10)
+        enabled_title = StrongBodyLabel("VPN Split включён", toggle_card)
+        style_inline_section_label(enabled_title, "VPN Split включён")
+        toggle_layout.addWidget(enabled_title)
         self._enabled_switch = SwitchButton(toggle_card)
         self._enabled_switch.setChecked(get_vpn_split_enabled())
         self._enabled_switch.checkedChanged.connect(self._on_enabled_changed)
         toggle_layout.addStretch()
         toggle_layout.addWidget(self._enabled_switch)
         self.add_widget(toggle_card)
-        self.add_spacing(10)
+        self.add_spacing(8)
 
         tunnel_card = CardWidget(self.content)
         tunnel_layout = QVBoxLayout(tunnel_card)
-        tunnel_layout.setContentsMargins(16, 12, 16, 12)
+        tunnel_layout.setContentsMargins(14, 10, 14, 10)
         tunnel_layout.setSpacing(8)
-        tunnel_layout.addWidget(StrongBodyLabel("Состояние системного туннеля", tunnel_card))
+        tunnel_title = StrongBodyLabel("Туннель VPN", tunnel_card)
+        style_inline_section_label(tunnel_title, "Туннель VPN")
+        tunnel_title.setToolTip(
+            "Показывает Windows-адаптер / службу AmneziaWGTunnel. "
+            "Если VPN включён только в приложении AmneziaWG — статус здесь может быть «не активен»."
+        )
+        tunnel_layout.addWidget(tunnel_title)
+        status_row = QHBoxLayout()
+        status_row.setSpacing(10)
+        self._tunnel_status_dot = PulsingDot(tunnel_card, size=14)
+        status_row.addWidget(self._tunnel_status_dot, 0, Qt.AlignmentFlag.AlignTop)
         self._tunnel_status_label = BodyLabel("", tunnel_card)
         self._tunnel_status_label.setWordWrap(True)
-        tunnel_layout.addWidget(self._tunnel_status_label)
+        status_row.addWidget(self._tunnel_status_label, 1)
+        tunnel_layout.addLayout(status_row)
         stop_row = QHBoxLayout()
-        self._stop_tunnel_btn = PushButton("Остановить системный туннель", tunnel_card)
+        self._stop_tunnel_btn = PushButton("Остановить CLI-туннель", tunnel_card)
+        self._stop_tunnel_btn.setToolTip(
+            "Останавливает службу, созданную кнопкой «Применить + CLI туннель». "
+            "Туннель, запущенный вручную в AmneziaWG, этой кнопкой не трогается."
+        )
         self._stop_tunnel_btn.clicked.connect(self._stop_system_tunnel)
         stop_row.addWidget(self._stop_tunnel_btn)
         stop_row.addStretch()
         tunnel_layout.addLayout(stop_row)
         self.add_widget(tunnel_card)
-        self.add_spacing(10)
+        self.add_spacing(8)
 
         config_card = CardWidget(self.content)
         config_layout = QVBoxLayout(config_card)
-        config_layout.setContentsMargins(16, 12, 16, 12)
+        config_layout.setContentsMargins(14, 10, 14, 10)
         config_layout.setSpacing(8)
-        config_layout.addWidget(StrongBodyLabel("Ваш конфиг AmneziaWG (.conf)", config_card))
+        config_title = StrongBodyLabel("Ваш конфиг AmneziaWG (.conf)", config_card)
+        style_inline_section_label(config_title, "Конфиг AmneziaWG")
+        config_layout.addWidget(config_title)
         config_layout.addWidget(
             CaptionLabel(
                 "Путь к файлу, который уже используете в AmneziaWG. «Сохранить копию» — необязательно.",
@@ -208,21 +234,28 @@ class VpnSplitPage(BasePage):
         row.addWidget(open_active_btn)
         config_layout.addLayout(row)
         self.add_widget(config_card)
-        self.add_spacing(10)
+        self.add_spacing(8)
 
         rules_card = CardWidget(self.content)
         rules_layout = QVBoxLayout(rules_card)
-        rules_layout.setContentsMargins(16, 12, 16, 12)
+        rules_layout.setContentsMargins(14, 10, 14, 10)
         rules_layout.setSpacing(8)
-        rules_layout.addWidget(StrongBodyLabel("Правила по доменам (через VPN, не DPI)", rules_card))
+        rules_title = StrongBodyLabel("Сайты через VPN", rules_card)
+        style_inline_section_label(rules_title, "Сайты через VPN")
+        rules_title.setToolTip(
+            "Эти домены уходят в AmneziaWG (AllowedIPs). "
+            "Остальной трафик, включая YouTube, остаётся на обычном обходе DPI."
+        )
+        rules_layout.addWidget(rules_title)
 
         add_row = QHBoxLayout()
         self._domain_edit = LineEdit(rules_card)
-        self._domain_edit.setPlaceholderText("grok.com  или  *.cursor.sh")
+        self._domain_edit.setPlaceholderText("например grok.com или *.cursor.sh")
         self._domain_edit.returnPressed.connect(self._add_domain)
-        add_btn = PrimaryPushButton("Добавить домен", rules_card)
+        add_btn = PrimaryPushButton("Добавить сайт", rules_card)
         add_btn.clicked.connect(self._add_domain)
-        resolve_btn = PushButton("Резолв", rules_card)
+        resolve_btn = PushButton("Найти IP", rules_card)
+        resolve_btn.setToolTip("Перепроверить DNS для выбранных строк или поля ввода")
         resolve_btn.clicked.connect(self._resolve_selected)
         add_row.addWidget(self._domain_edit, 1)
         add_row.addWidget(add_btn)
@@ -230,8 +263,8 @@ class VpnSplitPage(BasePage):
         rules_layout.addLayout(add_row)
 
         bulk_row = QHBoxLayout()
-        self._refresh_all_ips_btn = PushButton("Обновить IP всех доменов", rules_card)
-        self._refresh_all_ips_btn.setToolTip("DNS-резолв всех правил без «Применить»")
+        self._refresh_all_ips_btn = PushButton("Обновить IP всех сайтов", rules_card)
+        self._refresh_all_ips_btn.setToolTip("Перепроверить DNS для всех правил без «Применить»")
         self._refresh_all_ips_btn.clicked.connect(self._refresh_all_ips)
         paste_btn = PushButton("Вставить список", rules_card)
         paste_btn.clicked.connect(self._import_domains_paste)
@@ -243,9 +276,19 @@ class VpnSplitPage(BasePage):
         bulk_row.addStretch()
         rules_layout.addLayout(bulk_row)
 
+        self._empty_state = CaptionLabel(
+            "Список пуст.\n"
+            "Добавьте сайт выше или вставьте список — затем нажмите «Применить».",
+            rules_card,
+        )
+        self._empty_state.setWordWrap(True)
+        self._empty_state.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._empty_state.setMinimumHeight(120)
+        rules_layout.addWidget(self._empty_state)
+
         self._table = TableWidget(rules_card)
         self._table.setColumnCount(3)
-        self._table.setHorizontalHeaderLabels(["Домен", "IP (шт.)", "Последние IP"])
+        self._table.setHorizontalHeaderLabels(["Сайт", "IP (шт.)", "Последние IP"])
         self._table.setSelectionBehavior(TableWidget.SelectionBehavior.SelectRows)
         self._table.setSelectionMode(TableWidget.SelectionMode.ExtendedSelection)
         self._table.setEditTriggers(TableWidget.EditTrigger.NoEditTriggers)
@@ -272,11 +315,15 @@ class VpnSplitPage(BasePage):
         actions = QHBoxLayout(actions_row)
         actions.setContentsMargins(0, 0, 0, 0)
         self._sync_btn = PrimaryPushButton("Применить", actions_row)
+        self._sync_btn.setToolTip(
+            "Обновляет active.conf и исключения DPI. "
+            "Если VPN у вас в AmneziaWG — после этого обновите/переподключите туннель там."
+        )
         self._sync_btn.clicked.connect(lambda: self._run_sync(reload_tunnel=False))
         self._sync_tunnel_btn = PushButton("Применить + CLI туннель", actions_row)
         self._sync_tunnel_btn.setToolTip(
-            "Создаёт Windows-службу AmneziaWGTunnel — AmneziaWG GUI её не отключает. "
-            "Предпочтительно обновлять active.conf вручную в AmneziaWG."
+            "Создаёт Windows-службу туннеля. Приложение AmneziaWG её не выключает. "
+            "Обычный путь: «Применить» и обновить туннель в AmneziaWG."
         )
         self._sync_tunnel_btn.clicked.connect(self._run_sync_with_cli_confirm)
         actions.addWidget(self._sync_btn)
@@ -341,25 +388,52 @@ class VpnSplitPage(BasePage):
         else:
             self._progress.hide()
 
-    def _refresh_tunnel_status(self) -> None:
-        status = get_tunnel_status()
+    def on_page_activated(self) -> None:
+        self._start_status_polling(force_refresh=True)
+
+    def on_page_hidden(self) -> None:
+        self._stop_status_polling()
+
+    def _start_status_polling(self, *, force_refresh: bool = False) -> None:
+        if not self._status_timer.isActive():
+            self._status_timer.start()
+        self._refresh_tunnel_status(force=force_refresh)
+
+    def _stop_status_polling(self) -> None:
+        if self._status_timer.isActive():
+            self._status_timer.stop()
+
+    def _refresh_tunnel_status(self, *, force: bool = False) -> None:
+        if not force and not self.isVisible():
+            self._stop_status_polling()
+            return
+        status = get_cached_tunnel_status(force=force)
         self._tunnel_status_label.setText(format_tunnel_status(status))
         self._stop_tunnel_btn.setEnabled(status.is_active)
+        if status.is_active:
+            self._tunnel_status_dot.set_color("#3DDC97")
+            self._tunnel_status_dot.start_pulse()
+        else:
+            self._tunnel_status_dot.set_color("#8C9CB0")
+            self._tunnel_status_dot.stop_pulse()
 
     def _stop_system_tunnel(self) -> None:
         result = stop_vpn_system_tunnel()
-        self._refresh_tunnel_status()
+        invalidate_tunnel_status_cache()
+        invalidate_dpi_status_cache()
+        self._refresh_tunnel_status(force=True)
         message = str(result.message or "")
         if result.ok and callable(self._restart_winws):
             if self._restart_winws():
                 message += " winws2 перезапущен."
+                invalidate_dpi_status_cache()
         self._status_label.setText(message)
 
     def _run_sync_with_cli_confirm(self) -> None:
         body = (
             "Будет создана Windows-служба туннеля (AmneziaWGTunnel). "
             "AmneziaWG может показывать «нет активных туннелей», хотя VPN реально работает. "
-            "Останавливать — кнопкой «Остановить системный туннель» или выключением VPN Split.\n\n"
+            "Останавливать — кнопкой «Остановить CLI-туннель» или выключением VPN Split.\n\n"
             "Продолжить?"
         )
         box = MessageBox("CLI туннель", body, self)
@@ -383,7 +457,9 @@ class VpnSplitPage(BasePage):
             if callable(self._restart_winws) and self._restart_winws():
                 message += " winws2 перезапущен."
             self._status_label.setText(message)
-        self._refresh_tunnel_status()
+        invalidate_tunnel_status_cache()
+        invalidate_dpi_status_cache()
+        self._refresh_tunnel_status(force=True)
 
     def _open_active_config(self) -> None:
         path = active_config_path()
@@ -412,11 +488,14 @@ class VpnSplitPage(BasePage):
 
     def _reload_table(self) -> None:
         rules = get_vpn_split_rules()
+        empty = len(rules) <= 0
+        self._empty_state.setVisible(empty)
+        self._table.setVisible(not empty)
         self._table.setRowCount(len(rules))
-        if not rules:
+        if empty:
             self._table.setMinimumHeight(160)
-        else:
-            self._table.setMinimumHeight(max(280, min(420, 56 + len(rules) * 40)))
+            return
+        self._table.setMinimumHeight(max(280, min(420, 56 + len(rules) * 40)))
         for row, item in enumerate(rules):
             domain = str(item.get("domain") or "")
             ips = list(item.get("ips") or [])
@@ -487,12 +566,12 @@ class VpnSplitPage(BasePage):
                 self._update_rule_ips(clean, ips)
                 total_ips += len(ips)
             self._reload_table()
-            self._status_label.setText(f"Резолв: {len(selected)} домен(ов), {total_ips} IP")
+            self._status_label.setText(f"IP обновлены: {len(selected)} сайт(ов), {total_ips} адресов")
             return
 
         domain = normalize_domain_pattern(str(self._domain_edit.text() or ""))
         if not domain:
-            self._status_label.setText("Выберите домены (Ctrl/Shift) или введите *.cursor.sh")
+            self._status_label.setText("Выберите сайты (Ctrl/Shift) или введите *.cursor.sh")
             return
         _, ips = resolve_domain_rule(domain)
         self._update_rule_ips(domain, ips)
@@ -619,10 +698,12 @@ class VpnSplitPage(BasePage):
         if getattr(result, "ok", False) and callable(self._restart_winws):
             if self._restart_winws():
                 message += " winws2 перезапущен."
+                invalidate_dpi_status_cache()
             else:
                 message += " Перезапустите winws2 вручную на главной странице."
         self._status_label.setText(message)
-        self._refresh_tunnel_status()
+        invalidate_tunnel_status_cache()
+        self._refresh_tunnel_status(force=True)
         if getattr(result, "ok", False):
             log(message, "INFO")
         else:

@@ -37,6 +37,21 @@
 
 ---
 
+## Скриншоты
+
+Визуальный контракт: [`DESIGN.md`](DESIGN.md) (ultra-tech dark, phosphor HUD).
+
+| Экран | Что показать работодателю |
+| --- | --- |
+| **Control** | Статус DPI, крупный «Запустить», HUD-полоса пресета |
+| **VPN Split** | Список сайтов / empty state, статус туннеля после Apply |
+| **Telegram** | Start + «Открыть» deeplink, phosphor-dot статуса |
+| **О программе** | Описание продукта и контакт |
+
+Кадры интерфейса кладите в [`docs/screenshots/`](docs/screenshots/) (см. чеклист там) и вкладывайте в GitHub Release. Пока файлов нет — ориентир по `DESIGN.md` и описанию выше.
+
+---
+
 ## Версия и история изменений
 
 - Текущая версия: файл [`src/config/build_info.py`](src/config/build_info.py) (`APP_VERSION`, `CHANNEL`)

@@ -314,11 +314,24 @@ class AboutPage(BasePage):
     # ─────────────────────────────────────────────────────────────────────────
 
     def _build_about_content(self, layout: QVBoxLayout):
+        from app.branding import HIDE_LICENSE_UI
         from config.build_info import APP_VERSION
-        from licensing.service import get_current_license_status, get_local_machine_id
 
-        license_status = get_current_license_status()
         tokens = get_theme_tokens()
+        license_kwargs = {}
+        if not HIDE_LICENSE_UI:
+            from licensing.service import get_current_license_status, get_local_machine_id
+
+            license_status = get_current_license_status()
+            license_kwargs = {
+                "on_activate_license": self._activate_license,
+                "on_deactivate_license": self._deactivate_license,
+                "on_copy_machine_id": self._copy_machine_id,
+                "license_machine_id": get_local_machine_id(),
+                "license_status_text": self._format_license_status_text(license_status),
+                "license_status_valid": license_status.valid,
+            }
+
         widgets = build_about_page_about_content(
             layout,
             tr_fn=lambda key, default: tr_catalog(key, language=self._ui_language, default=default),
@@ -328,12 +341,7 @@ class AboutPage(BasePage):
             make_section_label=lambda text: _make_section_label(text),
             on_open_updates=self._open_updates_callback,
             on_open_premium=self._open_premium_callback,
-            on_activate_license=self._activate_license,
-            on_deactivate_license=self._deactivate_license,
-            on_copy_machine_id=self._copy_machine_id,
-            license_machine_id=get_local_machine_id(),
-            license_status_text=self._format_license_status_text(license_status),
-            license_status_valid=license_status.valid,
+            **license_kwargs,
         )
         self.about_section_version_label = widgets.about_section_version_label
         self.about_app_name_label = widgets.about_app_name_label

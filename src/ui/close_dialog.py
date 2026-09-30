@@ -6,6 +6,7 @@ WinUI диалог выбора варианта закрытия приложе
 
 from PyQt6.QtWidgets import QHBoxLayout
 from qfluentwidgets import (
+    FluentIcon,
     MessageBoxBase, SubtitleLabel, BodyLabel,
 )
 from ui.accessibility import set_control_accessibility, set_state_text
@@ -51,8 +52,7 @@ class CloseDialog(MessageBoxBase):
         self.trayButton = create_dialog_action_button(
             self.widget,
             text="Свернуть в трей",
-            icon_name="fa5s.window-restore",
-            icon_color="#d0d0d0",
+            fluent_icon=FluentIcon.MINIMIZE,
         )
         self.trayButton.clicked.connect(self._on_tray)
         self.viewLayout.addWidget(self.trayButton)
@@ -61,8 +61,7 @@ class CloseDialog(MessageBoxBase):
         self.guiOnlyButton = create_dialog_action_button(
             self.widget,
             text="Закрыть только GUI",
-            icon_name="fa5s.sign-out-alt",
-            icon_color="#aaaaaa",
+            fluent_icon=FluentIcon.CLOSE,
         )
         self.guiOnlyButton.clicked.connect(self._on_gui_only)
         self.viewLayout.addWidget(self.guiOnlyButton)
@@ -71,6 +70,7 @@ class CloseDialog(MessageBoxBase):
         self.stopDpiButton = create_dialog_action_button(
             self.widget,
             text="Закрыть и остановить DPI",
+            fluent_icon=FluentIcon.POWER_BUTTON,
             danger=True,
         )
         self.stopDpiButton.clicked.connect(self._on_stop_dpi)
@@ -84,8 +84,7 @@ class CloseDialog(MessageBoxBase):
         self.cancelLinkButton = create_dialog_cancel_button(
             self.widget,
             text="Отмена",
-            icon_name="fa5s.times",
-            icon_color="#aaaaaa",
+            fluent_icon=FluentIcon.CANCEL,
         )
         self.cancelLinkButton.clicked.connect(self.reject)
         self._cancelRow.addWidget(self.cancelLinkButton)

@@ -133,7 +133,10 @@ def is_vpn_tunnel_active() -> bool:
 def format_tunnel_status(status: TunnelStatus | None = None) -> str:
     status = status or get_tunnel_status()
     if not status.is_active:
-        return "Системный туннель: не активен"
+        return (
+            "CLI-туннель RKNHS не активен. "
+            "Если VPN включён в AmneziaWG — это нормально, статусом управляет приложение Amnezia."
+        )
 
     parts: list[str] = []
     if status.adapter_up:
@@ -144,8 +147,8 @@ def format_tunnel_status(status: TunnelStatus | None = None) -> str:
         parts.append("служба: " + "; ".join(running))
     detail = "; ".join(parts) if parts else "активен"
     return (
-        f"Системный туннель: {detail}. "
-        "AmneziaWG может показывать «отключено», если туннель поднят через RKNHS CLI."
+        f"CLI-туннель активен: {detail}. "
+        "В AmneziaWG может отображаться «отключено», если туннель поднят через RKNHS."
     )
 
 

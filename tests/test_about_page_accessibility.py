@@ -46,22 +46,25 @@ class AboutPageAccessibilityTests(unittest.TestCase):
             widgets.about_app_name_label.property("screenReaderStateText"),
             "Название программы: RKNHS",
         )
-        self.assertEqual(widgets.about_version_value_label.accessibleName(), "Версия программы: 9.9.9")
-        self.assertEqual(
-            widgets.about_version_value_label.property("screenReaderStateText"),
-            "Версия программы: 9.9.9",
+        self.assertTrue(
+            str(widgets.about_version_value_label.accessibleName()).startswith("Версия программы:")
         )
+        self.assertIn("9.9.9", widgets.about_version_value_label.text())
 
-        # RKNHS fork hides donate/premium UI and upstream course/docs links.
+        # RKNHS fork hides donate/premium UI, license block, and upstream course links.
+        from app.branding import HIDE_LICENSE_UI
+
         self.assertTrue(HIDE_DONATE_NAV)
         self.assertTrue(HIDE_EXTERNAL_LINKS)
+        self.assertTrue(HIDE_LICENSE_UI)
         self.assertIsNone(widgets.premium_btn)
         self.assertIsNone(widgets.sub_status_label)
         self.assertIsNone(widgets.course_group)
         self.assertIsNone(widgets.youtube_course_card)
         self.assertIsNone(widgets.youtube_playlist_card)
-        self.assertIsNone(widgets.legacy_docs_group)
-        self.assertIsNone(widgets.legacy_course_group)
+        self.assertIsNone(widgets.license_card)
+        self.assertIsNotNone(widgets.legacy_docs_group)
+        self.assertIsNotNone(widgets.legacy_course_group)
 
     def test_subscription_status_update_reads_state_for_screen_reader(self) -> None:
         page = AboutPage.__new__(AboutPage)

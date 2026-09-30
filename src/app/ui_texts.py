@@ -171,16 +171,16 @@ TEXTS: dict[str, dict[str, str]] = {
     },
     "page.control.howto.body": {
         "ru": (
-            "1) Выберите пресет в «Мои пресеты» — это набор профилей обхода.\n"
-            "2) Включите обход на этой странице — только тогда пресет реально применяется.\n"
-            "3) Если сайт не открывается — откройте Blockcheck и примените рабочую стратегию в текущий пресет.\n"
-            "Упрямый сервис (не DPI) лучше добавить в VPN Split, а не расширять перехват."
+            "1) Нажмите «Запустить» на этой странице — включается обычный обход (YouTube и сайты).\n"
+            "2) Опционально: VPN Split — упрямые сайты через AmneziaWG (нужен установленный AmneziaWG).\n"
+            "3) Опционально: Telegram — локальный прокси или маршруты Telegram в VPN Split.\n"
+            "Если сайт всё ещё не открывается — Blockcheck подберёт стратегию в текущий пресет."
         ),
         "en": (
-            "1) Pick a preset in My presets — a set of bypass profiles.\n"
-            "2) Start bypass on this page — only then the preset is applied.\n"
-            "3) If a site still fails — open Blockcheck and apply a working strategy into the current preset.\n"
-            "Stubborn non-DPI targets belong in VPN Split, not a wider divert filter."
+            "1) Press Start on this page — normal bypass (YouTube and sites).\n"
+            "2) Optional: VPN Split — stubborn sites via AmneziaWG (AmneziaWG must be installed).\n"
+            "3) Optional: Telegram — local proxy or Telegram routes in VPN Split.\n"
+            "If a site still fails — Blockcheck picks a strategy into the current preset."
         ),
     },
     "page.control.howto.open": {
@@ -288,24 +288,32 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Selected preset “{preset}” for {isp}",
     },
     "page.control.preset_guide.title": {
-        "ru": "С чего начать",
-        "en": "Getting started",
+        "ru": "Первый запуск — 3 шага",
+        "en": "First run — 3 steps",
     },
     "page.control.preset_guide.body": {
-        "ru": "Выберите путь: авто по провайдеру, подбор через Blockcheck или оставить текущий пресет.",
-        "en": "Choose a path: ISP auto, Blockcheck pick, or keep the current preset.",
+        "ru": (
+            "1) Запустите обход на главной странице.\n"
+            "2) Нужны Cursor / упрямые сайты — VPN Split (AmneziaWG).\n"
+            "3) Проблемы с Telegram — страница Telegram или маршруты в VPN."
+        ),
+        "en": (
+            "1) Start bypass on the main page.\n"
+            "2) Need Cursor / stubborn sites — VPN Split (AmneziaWG).\n"
+            "3) Telegram issues — Telegram page or VPN routes."
+        ),
     },
     "page.control.preset_guide.isp": {
-        "ru": "Авто по провайдеру",
-        "en": "ISP auto",
+        "ru": "К запуску DPI",
+        "en": "Go to Start",
     },
     "page.control.preset_guide.blockcheck": {
-        "ru": "Подобрать (Blockcheck)",
-        "en": "Pick via Blockcheck",
+        "ru": "VPN Split",
+        "en": "VPN Split",
     },
     "page.control.preset_guide.keep": {
-        "ru": "Оставить текущий",
-        "en": "Keep current",
+        "ru": "Telegram",
+        "en": "Telegram",
     },
     "page.control.status.running": {
         "ru": "RKNHS работает",
@@ -608,8 +616,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "VPN Split",
     },
     "page.vpn_split.subtitle": {
-        "ru": "Упрямые домены через VPN; YouTube/DPI оставьте на пресете Control — не расширяйте перехват",
-        "en": "Stubborn domains via VPN; keep YouTube/DPI on the Control preset — do not widen divert",
+        "ru": "Отдельные сайты через VPN. YouTube и обычный обход — на главной странице.",
+        "en": "Send stubborn sites through VPN. Keep YouTube and normal bypass on the main page.",
     },
     "page.blockcheck.title": {
         "ru": "BlockCheck",
@@ -3582,8 +3590,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Control",
     },
     "page.winws2_control.subtitle": {
-        "ru": "Настройка и запуск RKNHS. В «Мои пресеты» выбирается пресет, а в «Настройка пресета» меняются профили и выбранные для них готовые стратегии.",
-        "en": "Configure and launch RKNHS. My presets selects a preset; preset setup changes profiles and ready strategies.",
+        "ru": "Выберите пресет и нажмите «Запуск». Тонкая настройка — в «Мои пресеты».",
+        "en": "Pick a preset and press Start. Fine-tuning lives in My presets.",
     },
     "page.winws2_control.section.status": {
         "ru": "Статус работы",
@@ -4558,20 +4566,20 @@ TEXTS_PAGES_FINAL: dict[str, dict[str, str]] = {
         "en": "On/Off",
     },
     "page.appearance.display_mode.description": {
-        "ru": "Выберите светлый или тёмный режим интерфейса.",
-        "en": "Choose light or dark interface mode.",
+        "ru": "Рекомендуется тёмный режим — под него собран ultra-tech UI. Светлый поддерживается, но вторичен.",
+        "en": "Dark mode is recommended — the ultra-tech UI is designed for it. Light is supported but secondary.",
     },
     "page.appearance.display_mode.option.dark": {
-        "ru": "🌙 Тёмный",
-        "en": "🌙 Dark",
+        "ru": "Тёмный (рекомендуется)",
+        "en": "Dark (recommended)",
     },
     "page.appearance.display_mode.option.light": {
-        "ru": "☀️ Светлый",
-        "en": "☀️ Light",
+        "ru": "Светлый",
+        "en": "Light",
     },
     "page.appearance.display_mode.option.system": {
-        "ru": "⚙ Авто",
-        "en": "⚙ Auto",
+        "ru": "Как в Windows",
+        "en": "Follow Windows",
     },
     "page.appearance.background.description": {
         "ru": "Стандартный фон соответствует режиму отображения. AMOLED и РКН Тян доступны подписчикам Premium. Для РКН Тян можно выбрать готовый фон из списка.",

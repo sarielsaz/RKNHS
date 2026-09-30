@@ -1,6 +1,6 @@
 # RKNHS Desktop UI — Ultra-Tech Dark
 
-Visual contract for the RKNHS Windows desktop app. Dark terminal / network-HUD aesthetic. Light themes remain supported but are not the hero.
+Visual contract for the RKNHS Windows desktop app. Dark terminal / network-HUD aesthetic. Light themes remain supported but are **not recommended** as the primary look — prefer dark for HUD mono captions, phosphor dots, and void panels.
 
 ## Intent
 

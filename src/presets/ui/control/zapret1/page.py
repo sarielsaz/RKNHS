@@ -297,7 +297,8 @@ class Zapret1ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
 
     def _show_howto_dialog(self) -> None:
         try:
-            from qfluentwidgets import MessageBox
+            from qfluentwidgets import FluentIcon, MessageBox
+            from ui.message_box_accessibility import polish_message_box_buttons
 
             box = MessageBox(
                 tr_catalog("page.control.howto.title", language=self._ui_language, default="Как это устроено"),
@@ -313,6 +314,7 @@ class Zapret1ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
                 box.cancelButton.hide()
             except Exception:
                 pass
+            polish_message_box_buttons(box, yes_icon=FluentIcon.ACCEPT, danger_yes=False)
             box.exec()
         except Exception:
             pass

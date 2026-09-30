@@ -13,8 +13,8 @@ from ui.tech_fluent_patches import (
 )
 
 _TECH_STYLE_MARKER = "/* __RKNHS_TECH_STYLE__ */"
-_CARD_GROUP_SPACING = 10
-_PAGE_SECTION_SPACING = 20
+_CARD_GROUP_SPACING = 8
+_PAGE_SECTION_SPACING = 16
 _LAST_APPLIED_TECH_KEY: tuple | None = None
 _TECH_TREE_WALK_DONE = False
 
@@ -482,14 +482,7 @@ def apply_page_header_styles(page, tokens: ThemeTokens | None = None) -> None:
         f"font-family: {t.font_mono_qss}; "
         "font-size: 12px; background: transparent;"
     )
-    section_qss = (
-        f"color: {t.fg_muted}; "
-        f"font-family: {t.font_mono_qss}; "
-        "font-size: 11px; font-weight: 600; "
-        "letter-spacing: 1px; background: transparent; "
-        f"padding-top: 6px; border-bottom: 1px solid {t.border_hairline}; "
-        "padding-bottom: 4px;"
-    )
+    section_qss = build_section_heading_qss(t)
     try:
         if title is not None:
             title.setStyleSheet(title_qss)
@@ -503,6 +496,45 @@ def apply_page_header_styles(page, tokens: ThemeTokens | None = None) -> None:
                 continue
     except Exception:
         pass
+
+
+def build_section_heading_qss(tokens: ThemeTokens | None = None) -> str:
+    t = resolve_tech_tokens(tokens)
+    return (
+        f"color: {t.fg_muted}; "
+        f"font-family: {t.font_mono_qss}; "
+        "font-size: 11px; font-weight: 600; "
+        "letter-spacing: 1px; background: transparent; "
+        f"padding-top: 4px; border-bottom: 1px solid {t.border_hairline}; "
+        "padding-bottom: 4px;"
+    )
+
+
+def build_inline_section_heading_qss(tokens: ThemeTokens | None = None) -> str:
+    """Mono // SECTION style for titles inside cards (no divider line)."""
+    t = resolve_tech_tokens(tokens)
+    return (
+        f"color: {t.fg_muted}; "
+        f"font-family: {t.font_mono_qss}; "
+        "font-size: 11px; font-weight: 600; "
+        "letter-spacing: 1px; background: transparent;"
+    )
+
+
+def style_inline_section_label(label, text: str | None = None, *, tokens: ThemeTokens | None = None) -> None:
+    """Apply // SECTION mono caption to an in-card heading label."""
+    try:
+        from ui.tech_type import format_terminal_heading
+
+        if text is not None:
+            label.setText(format_terminal_heading(text))
+        label.setStyleSheet(build_inline_section_heading_qss(tokens))
+    except Exception:
+        if text is not None:
+            try:
+                label.setText(str(text))
+            except Exception:
+                pass
 
 
 def build_primary_button_qss(tokens: ThemeTokens | None = None) -> str:
@@ -535,10 +567,13 @@ __all__ = [
     "build_hud_caption_qss",
     "build_hud_cell_qss",
     "build_hud_strip_qss",
+    "build_inline_section_heading_qss",
     "build_primary_button_qss",
+    "build_section_heading_qss",
     "build_settings_card_qss",
     "build_status_hero_qss",
     "build_window_chrome_qss",
     "invalidate_tech_style_cache",
     "resolve_tech_tokens",
+    "style_inline_section_label",
 ]

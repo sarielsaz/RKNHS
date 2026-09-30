@@ -94,30 +94,34 @@ def _maybe_show_preset_guide(startup_host, *, notify=None, show_page=None) -> No
 
         buttons = [
             notification_action(
-                "preset_guide_isp",
-                tr_catalog("page.control.preset_guide.isp", default="Авто по провайдеру"),
+                "onboarding_dpi",
+                tr_catalog("page.control.preset_guide.isp", default="К запуску DPI"),
             ),
             notification_action(
-                "preset_guide_blockcheck",
-                tr_catalog("page.control.preset_guide.blockcheck", default="Подобрать (Blockcheck)"),
+                "onboarding_vpn",
+                tr_catalog("page.control.preset_guide.blockcheck", default="VPN Split"),
             ),
             notification_action(
-                "preset_guide_keep",
-                tr_catalog("page.control.preset_guide.keep", default="Оставить текущий"),
+                "onboarding_telegram",
+                tr_catalog("page.control.preset_guide.keep", default="Telegram"),
             ),
         ]
         notify(
             advisory_notification(
                 level="info",
-                title=tr_catalog("page.control.preset_guide.title", default="С чего начать"),
+                title=tr_catalog("page.control.preset_guide.title", default="Первый запуск — 3 шага"),
                 content=tr_catalog(
                     "page.control.preset_guide.body",
-                    default="Выберите путь: авто по провайдеру, Blockcheck или оставить текущий.",
+                    default=(
+                        "1) Запустите обход на главной странице.\n"
+                        "2) Нужны Cursor / упрямые сайты — VPN Split (AmneziaWG).\n"
+                        "3) Проблемы с Telegram — страница Telegram или маршруты в VPN."
+                    ),
                 ),
                 source="startup.preset_guide",
                 presentation="infobar",
                 queue="startup",
-                duration=18000,
+                duration=20000,
                 buttons=buttons,
                 dedupe_key="startup.preset_guide",
             )

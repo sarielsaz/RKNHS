@@ -41,10 +41,10 @@ def build_mode_status_section_common(
     status_card = QFrame()
     status_card.setObjectName("statusHero")
     status_layout = QHBoxLayout(status_card)
-    status_layout.setContentsMargins(16, 14, 16, 14)
-    status_layout.setSpacing(14)
+    status_layout.setContentsMargins(14, 12, 14, 12)
+    status_layout.setSpacing(12)
 
-    status_dot = PulsingDot(size=32)
+    status_dot = PulsingDot(size=18)
     set_state_text(status_dot, "Индикатор состояния RKNHS: состояние пока не загружено")
     status_layout.addWidget(status_dot)
 
@@ -93,10 +93,10 @@ def build_last_status_message_card_common(
 ):
     card = CardWidget()
     layout = QHBoxLayout(card)
-    layout.setContentsMargins(16, 12, 16, 12)
-    layout.setSpacing(14)
+    layout.setContentsMargins(14, 10, 14, 10)
+    layout.setSpacing(12)
 
-    dot = PulsingDot()
+    dot = PulsingDot(size=14)
     dot.set_color("#8ab4f8")
     set_state_text(dot, "Индикатор последнего сообщения: пока нет новых сообщений")
     layout.addWidget(dot, 0, Qt.AlignmentFlag.AlignTop)
@@ -154,8 +154,8 @@ def build_mode_management_section_common(
 ):
     control_card = CardWidget()
     content_layout = QVBoxLayout(control_card)
-    content_layout.setContentsMargins(12, 12, 12, 12)
-    content_layout.setSpacing(10)
+    content_layout.setContentsMargins(12, 10, 12, 10)
+    content_layout.setSpacing(8)
 
     try:
         from ui.theme import get_theme_tokens
@@ -173,6 +173,8 @@ def build_mode_management_section_common(
         start_text,
         icon=FluentIcon.PLAY,
     )
+    start_btn.setMinimumHeight(48)
+    start_btn.setMinimumWidth(220)
     set_control_accessibility(
         start_btn,
         description="Запускает обход блокировок в выбранном режиме.",
@@ -189,10 +191,12 @@ def build_mode_management_section_common(
         on_start()
 
     start_btn.clicked.connect(_on_start_clicked)
-    buttons_layout.addWidget(start_btn)
+    buttons_layout.addWidget(start_btn, 2)
 
     stop_text = tr_fn(stop_key, stop_default)
     stop_winws_btn = stop_button_cls(stop_text)
+    stop_winws_btn.setMinimumHeight(36)
+    stop_winws_btn.setMinimumWidth(ACTION_CARD_BUTTON_WIDTH)
     set_control_accessibility(
         stop_winws_btn,
         description="Останавливает запущенный процесс обхода блокировок.",
@@ -201,13 +205,15 @@ def build_mode_management_section_common(
     stop_winws_btn.clicked.connect(on_stop)
     stop_winws_btn.setVisible(False)
     schedule_stop_button_icon(stop_winws_btn)
-    buttons_layout.addWidget(stop_winws_btn)
+    buttons_layout.addWidget(stop_winws_btn, 1)
 
     stop_exit_text = tr_fn(stop_exit_key, stop_exit_default)
     stop_and_exit_btn = stop_button_cls(
         stop_exit_text,
         icon=FluentIcon.POWER_BUTTON,
     )
+    stop_and_exit_btn.setMinimumHeight(36)
+    stop_and_exit_btn.setMinimumWidth(ACTION_CARD_BUTTON_WIDTH)
     set_control_accessibility(
         stop_and_exit_btn,
         description="Останавливает обход блокировок и закрывает программу.",
@@ -215,9 +221,9 @@ def build_mode_management_section_common(
     set_state_text(stop_and_exit_btn, stop_exit_text)
     stop_and_exit_btn.clicked.connect(on_stop_and_exit)
     stop_and_exit_btn.setVisible(False)
-    buttons_layout.addWidget(stop_and_exit_btn)
+    buttons_layout.addWidget(stop_and_exit_btn, 1)
 
-    buttons_layout.addStretch()
+    buttons_layout.addStretch(1)
     content_layout.addLayout(buttons_layout)
 
     progress_bar = indeterminate_progress_bar_cls(parent)

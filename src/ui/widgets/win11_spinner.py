@@ -22,22 +22,26 @@ class Win11Spinner(QWidget):
         self._color = QColor(color)
         self._angle = 0
         self._arc_length = 90  # Длина дуги в градусах
+        self._running = False
 
         self._timer = QTimer(self)
         self._timer.timeout.connect(self._rotate)
 
     def start(self):
         """Запускает анимацию"""
+        self._running = True
         try:
             if self._timer.isActive():
                 return
         except Exception:
             pass
-        self._timer.start(16)  # ~60 FPS
+        # ~30 FPS is enough for a small indeterminate spinner.
+        self._timer.start(33)
         self.show()
 
     def stop(self):
         """Останавливает анимацию"""
+        self._running = False
         try:
             if not self._timer.isActive():
                 return
@@ -46,8 +50,26 @@ class Win11Spinner(QWidget):
         self._timer.stop()
         self.hide()
 
+    def hideEvent(self, event):  # noqa: N802
+        try:
+            self._timer.stop()
+        except Exception:
+            pass
+        super().hideEvent(event)
+
+    def showEvent(self, event):  # noqa: N802
+        super().showEvent(event)
+        if self._running and self.isVisible() and not self._timer.isActive():
+            self._timer.start(33)
+
     def _rotate(self):
-        self._angle = (self._angle + 6) % 360
+        if not self._running or not self.isVisible():
+            try:
+                self._timer.stop()
+            except Exception:
+                pass
+            return
+        self._angle = (self._angle + 10) % 360
         self.update()
 
     def paintEvent(self, event):

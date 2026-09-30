@@ -4,6 +4,9 @@ from PyQt6.QtCore import QEvent, Qt, QTimer
 from PyQt6.QtGui import QColor, QPainter
 from PyQt6.QtWidgets import QWidget
 
+# ~7 FPS is enough for phosphor blink; 70ms was unnecessarily hot on idle Control.
+_PULSE_INTERVAL_MS = 140
+
 
 class PulsingDot(QWidget):
     """Animated status dot with a low-frequency timer."""
@@ -18,7 +21,7 @@ class PulsingDot(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self._timer = QTimer(self)
-        self._timer.setInterval(70)
+        self._timer.setInterval(_PULSE_INTERVAL_MS)
         self._timer.timeout.connect(self._tick)
 
     def set_color(self, color: str) -> None:
@@ -31,8 +34,7 @@ class PulsingDot(QWidget):
         if not self._is_pulsing:
             self._is_pulsing = True
             self._pulse_phase = 0.0
-            if self.isVisible():
-                self._timer.start()
+        self._sync_timer()
 
     def stop_pulse(self) -> None:
         self._is_pulsing = False
@@ -42,8 +44,7 @@ class PulsingDot(QWidget):
 
     def showEvent(self, event) -> None:  # noqa: N802
         super().showEvent(event)
-        if self._is_pulsing and not self._timer.isActive():
-            self._timer.start()
+        self._sync_timer()
 
     def hideEvent(self, event) -> None:  # noqa: N802
         super().hideEvent(event)
@@ -52,13 +53,35 @@ class PulsingDot(QWidget):
     def changeEvent(self, event) -> None:  # noqa: N802
         super().changeEvent(event)
         if event.type() == QEvent.Type.WindowStateChange:
-            window = self.window()
-            if window and window.isMinimized():
-                self._timer.stop()
-            elif self._is_pulsing and not self._timer.isActive():
+            self._sync_timer()
+
+    def _window_is_active_for_pulse(self) -> bool:
+        if not self.isVisible():
+            return False
+        window = self.window()
+        if window is None:
+            return True
+        try:
+            if window.isMinimized():
+                return False
+            if hasattr(window, "isVisible") and not window.isVisible():
+                return False
+        except Exception:
+            return True
+        return True
+
+    def _sync_timer(self) -> None:
+        should_run = bool(self._is_pulsing and self._window_is_active_for_pulse())
+        if should_run:
+            if not self._timer.isActive():
                 self._timer.start()
+        else:
+            self._timer.stop()
 
     def _tick(self) -> None:
+        if not self._window_is_active_for_pulse():
+            self._timer.stop()
+            return
         self._pulse_phase = (self._pulse_phase + 0.14) % 1.0
         self.update()
 

@@ -15,6 +15,7 @@ from qfluentwidgets import RoundMenu, Action, FluentIcon
 
 from ui.message_box_accessibility import set_message_box_button_accessibility
 from ui.popup_menu_style import suppress_round_menu_hairline
+from app.runtime_status_cache import get_cached_dpi_running, invalidate_dpi_status_cache
 
 try:
     from log.log import log
@@ -309,10 +310,10 @@ class SystemTrayManager:
         if sys.platform != "win32" or not self._hwnd:
             return
         try:
-            from tray_status_icon import is_winws2_running, load_status_icon_handle
+            from tray_status_icon import load_status_icon_handle
             from app.branding import tray_tooltip
 
-            running = bool(is_winws2_running())
+            running = bool(get_cached_dpi_running())
             if self._winws2_running == running and self._icon_visible:
                 data = self._build_notify_icon_data(NIF_ICON | NIF_TIP | NIF_SHOWTIP)
                 data.szTip = _truncate_text(tray_tooltip(winws2_running=running), 128)
@@ -849,6 +850,11 @@ class SystemTrayManager:
         except Exception as e:
             log(f"Не удалось запустить обход из трея: {e}", "WARNING")
         try:
+            invalidate_dpi_status_cache()
+            self.refresh_winws2_status_icon()
+        except Exception:
+            pass
+        try:
             self.show_notification(
                 "Обход",
                 "Запуск…" if ok else "Не удалось запустить",
@@ -862,6 +868,11 @@ class SystemTrayManager:
             ok = bool(self._tray_feature.stop_bypass())
         except Exception as e:
             log(f"Не удалось остановить обход из трея: {e}", "WARNING")
+        try:
+            invalidate_dpi_status_cache()
+            self.refresh_winws2_status_icon()
+        except Exception:
+            pass
         try:
             self.show_notification(
                 "Обход",

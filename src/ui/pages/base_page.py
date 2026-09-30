@@ -129,8 +129,8 @@ class BasePage(_FluentScrollArea):
 
         # --- Main layout ---
         self.vBoxLayout = QVBoxLayout(self.content)
-        self.vBoxLayout.setContentsMargins(18, 16, 18, 18)
-        self.vBoxLayout.setSpacing(20)
+        self.vBoxLayout.setContentsMargins(14, 12, 14, 14)
+        self.vBoxLayout.setSpacing(14)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Public layout alias used by page subclasses.
@@ -260,7 +260,7 @@ class BasePage(_FluentScrollArea):
         """Добавляет виджет на страницу"""
         self.vBoxLayout.addWidget(widget, stretch)
 
-    def add_spacing(self, height: int = 16):
+    def add_spacing(self, height: int = 12):
         """Добавляет вертикальный отступ"""
         from PyQt6.QtWidgets import QSpacerItem
         spacer = QSpacerItem(0, height, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)

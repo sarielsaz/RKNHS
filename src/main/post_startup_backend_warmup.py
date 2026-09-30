@@ -18,6 +18,7 @@ def install_backend_page_data_warmup(
     delay_ms: int = 8_000,
     premium_delay_ms: int = 18_000,
 ) -> None:
+    _ = logs_feature  # kept for call-site compatibility; Logs stay lazy until opened.
     def _run_named_warmup(name: str, callback) -> None:
         started_at = time.perf_counter()
         try:
@@ -28,11 +29,11 @@ def install_backend_page_data_warmup(
         log_ui_timing_since("warmup", name, "backend_page_data", started_at, important=True)
 
     def _start_backend_page_data_warmup() -> None:
+        # Appearance is cheap and helps first open; Logs/Orchestra/Blockcheck stay lazy.
         warmups = (
             ("Appearance", appearance_settings.warm_page_initial_state_cache),
-            ("Logs", logs_feature.warm_page_data_cache),
         )
-        log_startup_metric("StartupBackendPageDataWarmupStarted", "appearance, logs")
+        log_startup_metric("StartupBackendPageDataWarmupStarted", "appearance")
         for name, callback in warmups:
             enqueue_subsystem_task(
                 name.lower(),

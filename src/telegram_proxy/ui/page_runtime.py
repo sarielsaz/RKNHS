@@ -115,7 +115,7 @@ def build_status_plan(*, running: bool, restarting: bool, starting: bool, host: 
             invalidate_relay_check=False,
         )
     return TelegramProxyStatusPlan(
-        status_text="Остановлен",
+        status_text="Остановлен — нажмите «Запустить», затем «Открыть» для Telegram",
         toggle_text="Запустить",
         dot_active=False,
         host_edit_enabled=True,

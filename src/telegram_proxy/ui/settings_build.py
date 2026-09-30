@@ -25,6 +25,7 @@ class TelegramProxySettingsPanelWidgets:
     status_label: object
     btn_toggle: object
     stats_label: object
+    status_hint: object
     setup_section_label: object
     setup_desc_label: object
     setup_fallback_label: object
@@ -213,22 +214,40 @@ def build_telegram_proxy_settings_panel(
 
     status_header = QHBoxLayout()
     status_dot = status_dot_cls()
-    status_label = strong_body_label_cls("Остановлен")
+    status_label = strong_body_label_cls(
+        "Остановлен — нажмите «Запустить», затем «Открыть» для Telegram"
+    )
     status_header.addWidget(status_dot)
     status_header.addWidget(status_label)
     status_header.addStretch()
 
     btn_toggle = push_button_cls("Запустить", icon=FluentIcon.PLAY)
     btn_toggle.setFixedWidth(140)
+    set_tooltip(
+        btn_toggle,
+        "Запускает локальный прокси. После запуска нажмите «Открыть», чтобы Telegram подхватил настройки.",
+    )
     btn_toggle.clicked.connect(on_toggle_proxy)
     status_header.addWidget(btn_toggle)
     status_card.add_layout(status_header)
 
     stats_label = caption_label_cls("")
     status_card.add_widget(stats_label)
+
+    status_hint = caption_label_cls(
+        "Если Telegram не заходит — запустите прокси здесь и откройте ссылку ниже."
+    )
+    status_hint.setWordWrap(True)
+    status_card.add_widget(status_hint)
     layout.addWidget(status_card)
 
     setup_section_label = strong_body_label_cls(text.setup_title)
+    try:
+        from ui.tech_style import style_inline_section_label
+
+        style_inline_section_label(setup_section_label, text.setup_title)
+    except Exception:
+        pass
     layout.addWidget(setup_section_label)
 
     setup_desc_label = caption_label_cls(text.setup_description)
@@ -350,6 +369,7 @@ def build_telegram_proxy_settings_panel(
         status_label=status_label,
         btn_toggle=btn_toggle,
         stats_label=stats_label,
+        status_hint=status_hint,
         setup_section_label=setup_section_label,
         setup_desc_label=setup_desc_label,
         setup_fallback_label=setup_fallback_label,
@@ -810,6 +830,12 @@ def build_telegram_proxy_advanced_settings_panel(
     _insert_before_trailing_stretch(layout, upstream_card)
 
     manual_section_label = strong_body_label_cls(text.manual_hidden_title)
+    try:
+        from ui.tech_style import style_inline_section_label
+
+        style_inline_section_label(manual_section_label, text.manual_hidden_title)
+    except Exception:
+        pass
     manual_section_label.setVisible(False)
     _insert_before_trailing_stretch(layout, manual_section_label)
 

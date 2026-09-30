@@ -35,6 +35,61 @@ class VpnSplitSyncResult:
     ip_count: int = 0
     domain_count: int = 0
     active_config_path: str = ""
+    telegram_routes_ok: bool | None = None
+    tunnel_active: bool | None = None
+
+
+# Known Telegram IPv4 prefixes used in AmneziaWG AllowedIPs examples.
+_TELEGRAM_ROUTE_MARKERS = ("149.154.", "91.108.", "95.161.")
+
+
+def _has_telegram_routes(ips: list[str]) -> bool:
+    blob = ",".join(str(ip or "") for ip in ips)
+    return any(marker in blob for marker in _TELEGRAM_ROUTE_MARKERS)
+
+
+def _format_post_apply_status(
+    *,
+    domain_count: int,
+    domain_ip_count: int,
+    out_path: str,
+    ipset_path: str,
+    all_allowed_ips: list[str],
+    reload_tunnel_service: bool,
+    tunnel_ok: bool | None,
+    tunnel_message: str = "",
+) -> tuple[str, bool, bool]:
+    telegram_ok = _has_telegram_routes(all_allowed_ips)
+    tunnel_status = get_tunnel_status()
+    tunnel_active = bool(tunnel_status.is_active) or bool(tunnel_ok)
+
+    lines = [
+        f"Готово: {domain_count} сайт(ов), +{domain_ip_count} IP из списка.",
+        f"• Конфиг записан: {out_path}",
+        f"• DPI-исключения: {ipset_path}",
+    ]
+    if telegram_ok:
+        lines.append("• Маршруты Telegram: есть в AllowedIPs")
+    else:
+        lines.append(
+            "• Маршруты Telegram: не найдены — добавьте CIDR Telegram в исходный .conf "
+            "или домен через список сайтов"
+        )
+
+    if reload_tunnel_service and tunnel_ok:
+        lines.append(
+            f"• Туннель: CLI-служба поднята ({tunnel_message or 'ok'}). "
+            "AmneziaWG GUI может показывать «отключено»."
+        )
+    elif tunnel_active:
+        lines.append("• Туннель: активен (адаптер/служба видны системе)")
+    else:
+        lines.append(
+            "• Туннель: не подхватил conf — обновите/переподключите туннель в AmneziaWG"
+        )
+
+    lines.append("DPI-исключения действуют только пока VPN подключён.")
+    return "\n".join(lines), telegram_ok, tunnel_active
 
 
 def _vpn_settings_dir() -> str:
@@ -194,8 +249,8 @@ def disable_vpn_split(*, stop_system_tunnel: bool = True) -> VpnSplitSyncResult:
             message = f"{message}. {stop_result.message}"
         elif get_tunnel_status().is_active:
             message = (
-                f"{message}. Не удалось остановить системный туннель: {stop_result.message}. "
-                "Нажмите «Остановить системный туннель» на вкладке VPN Split."
+                f"{message}. Не удалось остановить CLI-туннель: {stop_result.message}. "
+                "Нажмите «Остановить CLI-туннель» на вкладке VPN Split."
             )
     return VpnSplitSyncResult(True, message)
 
@@ -263,37 +318,42 @@ def apply_vpn_split_sync(*, reload_tunnel_service: bool = False) -> VpnSplitSync
         return VpnSplitSyncResult(False, str(exc))
 
     domain_ip_count = len(domain_only_ips)
-    message = (
-        f"Готово: {domain_count} домен(ов), +{domain_ip_count} IP из доменов. "
-        f"DPI-исключения: {ipset_path}"
-    )
-    log(message, "INFO")
-
-    amnezia_hint = (
-        f"Обновите туннель в AmneziaWG ({out_path}). "
-        f"winws2 перезапустится автоматически; DPI-исключения действуют только пока VPN подключён."
+    all_allowed = static_ips + domain_only_ips
+    log(
+        f"VPN Split apply: {domain_count} domains, +{domain_ip_count} dynamic IPs → {out_path}",
+        "INFO",
     )
 
+    tunnel_ok: bool | None = None
+    tunnel_message = ""
     if reload_tunnel_service:
         tunnel = reload_tunnel(out_path)
+        tunnel_ok = bool(tunnel.ok)
+        tunnel_message = str(tunnel.message or "")
         if tunnel.ok:
             set_vpn_split_cli_tunnel_installed(True)
-            message = (
-                f"{message}. {tunnel.message} "
-                "Внимание: создана Windows-служба — отключайте через «Остановить системный туннель» "
-                "или выключение VPN Split; AmneziaWG GUI может не показывать её."
-            )
-        else:
-            message = f"{message}. {amnezia_hint}"
-    else:
-        message = f"{message}. {amnezia_hint}"
+
+    message, telegram_ok, tunnel_active = _format_post_apply_status(
+        domain_count=domain_count,
+        domain_ip_count=domain_ip_count,
+        out_path=out_path,
+        ipset_path=ipset_path,
+        all_allowed_ips=all_allowed,
+        reload_tunnel_service=reload_tunnel_service,
+        tunnel_ok=tunnel_ok,
+        tunnel_message=tunnel_message,
+    )
+    if reload_tunnel_service and tunnel_ok is False:
+        message += f"\n• CLI-служба: не поднялась ({tunnel_message or 'ошибка'})"
 
     return VpnSplitSyncResult(
         True,
         message,
-        ip_count=len(ipset_ips),
+        ip_count=len(all_allowed),
         domain_count=domain_count,
         active_config_path=out_path,
+        telegram_routes_ok=telegram_ok,
+        tunnel_active=tunnel_active,
     )
 
 

@@ -11,24 +11,24 @@ class TelegramProxyUiTextsTests(unittest.TestCase):
 
         self.assertEqual(
             plan.page_subtitle,
-            "Локальный прокси для Telegram. Используйте его, если Telegram подключается нестабильно.",
+            "Если Telegram тормозит или не заходит — включите локальный прокси и откройте ссылку ниже.",
         )
         self.assertEqual(plan.setup_title, "Подключить Telegram")
         self.assertEqual(
             plan.setup_description,
-            "Откройте ссылку. Telegram сам предложит добавить прокси. "
-            "Если Telegram не открылся, скопируйте ссылку и отправьте её себе в чат.",
+            "Нажмите «Открыть» — Telegram сам предложит добавить прокси. "
+            "Если окно не открылось, скопируйте ссылку и отправьте её себе в чат.",
         )
         self.assertEqual(plan.setup_fallback, "")
         self.assertEqual(plan.upstream_title, "Дополнительно")
         self.assertEqual(plan.upstream_toggle_title, "Внешний прокси")
         self.assertEqual(
             plan.proxy_mode_description,
-            "SOCKS5 — основной режим. MTProxy нужен для secret, Fake TLS и Cloudflare-сценариев.",
+            "Обычно достаточно SOCKS5. MTProxy нужен только для секрета, Fake TLS и Cloudflare.",
         )
         self.assertEqual(
             plan.upstream_toggle_description,
-            "Резервный SOCKS5, если часть серверов Telegram не отвечает.",
+            "Запасной сервер, если провайдер режет IP Telegram напрямую.",
         )
 
         joined = "\n".join(plan)

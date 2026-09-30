@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
 from ui.pages.base_page import BasePage
 from ui.one_shot_worker_runtime import OneShotWorkerRuntime
 from ui.performance_metrics import log_ui_timing_since
+from ui.pulsing_dot import PulsingDot
 from telegram_proxy.ui.build import (
     build_telegram_proxy_diag_panel,
     build_telegram_proxy_logs_panel,
@@ -90,29 +91,33 @@ from qfluentwidgets import (
 # How often (ms) the GUI reads new log lines from the ring buffer
 _LOG_REFRESH_MS = 500
 
+_STATUS_OK = "#3DDC97"
+_STATUS_IDLE = "#8C9CB0"
+_STATUS_ERR = "#FF5C7A"
 
 
-class _StatusDot(QWidget):
-    """Small colored circle indicator."""
+class _StatusDot(PulsingDot):
+    """Phosphor status LED compatible with set_active(bool) Telegram API."""
 
     def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setFixedSize(12, 12)
-        self._active = False
+        super().__init__(parent, size=14)
+        self.set_active(False)
 
     def set_active(self, active: bool):
-        self._active = active
-        self.update()
+        if bool(active):
+            self.set_color(_STATUS_OK)
+            self.start_pulse()
+        else:
+            self.set_color(_STATUS_IDLE)
+            self.stop_pulse()
 
-    def paintEvent(self, event):
-        from PyQt6.QtGui import QPainter, QColor
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        color = QColor("#4CAF50") if self._active else QColor("#888888")
-        p.setBrush(color)
-        p.setPen(Qt.PenStyle.NoPen)
-        p.drawEllipse(1, 1, 10, 10)
-        p.end()
+    def set_warn(self) -> None:
+        self.set_color("#F0B429")
+        self.start_pulse()
+
+    def set_error(self) -> None:
+        self.set_color(_STATUS_ERR)
+        self.stop_pulse()
 
 
 class TelegramProxyPage(BasePage):
@@ -308,10 +313,25 @@ class TelegramProxyPage(BasePage):
         if 0 <= index < len(keys):
             self._pivot.setCurrentItem(keys[index])
 
+    def _page_is_interactively_visible(self) -> bool:
+        if not self.isVisible():
+            return False
+        window = self.window()
+        try:
+            if window is not None and (bool(window.isMinimized()) or not bool(window.isVisible())):
+                return False
+        except Exception:
+            return True
+        return True
+
     def _sync_log_timer(self) -> None:
         if self._log_timer is None:
             return
-        should_run = bool(self.isVisible() and self._stacked.currentIndex() == 1 and self._log_edit is not None)
+        should_run = bool(
+            self._page_is_interactively_visible()
+            and self._stacked.currentIndex() == 1
+            and self._log_edit is not None
+        )
         if should_run and not self._log_timer.isActive():
             self._log_timer.start(_LOG_REFRESH_MS)
         elif not should_run and self._log_timer.isActive():
@@ -370,6 +390,7 @@ class TelegramProxyPage(BasePage):
         self._status_label = widgets.status_label
         self._btn_toggle = widgets.btn_toggle
         self._stats_label = widgets.stats_label
+        self._status_hint = widgets.status_hint
         self._setup_section_label = widgets.setup_section_label
         self._setup_desc_label = widgets.setup_desc_label
         self._setup_fallback_label = widgets.setup_fallback_label
@@ -1601,15 +1622,16 @@ class TelegramProxyPage(BasePage):
                 setattr(self, "_speed_hist_down", down),
             ),
             set_generation=lambda value: setattr(self, "_relay_check_gen", value),
+            status_hint=getattr(self, "_status_hint", None),
         )
         if self._stats_timer is not None:
-            if running and self.isVisible() and not self._stats_timer.isActive():
+            if running and self._page_is_interactively_visible() and not self._stats_timer.isActive():
                 self._stats_timer.start(2000)
-            elif not running:
+            elif not running or not self._page_is_interactively_visible():
                 self._stats_timer.stop()
 
     def _emit_stats_if_visible(self):
-        if self._cleanup_in_progress or not self.isVisible():
+        if self._cleanup_in_progress or not self._page_is_interactively_visible():
             return
         mgr = self._proxy_manager()
         if not mgr.is_running:
@@ -2381,7 +2403,12 @@ class TelegramProxyPage(BasePage):
         started_at = time.perf_counter()
         super().showEvent(event)
         self._sync_log_timer()
-        if self._stats_timer is not None and self._proxy_manager().is_running and not self._stats_timer.isActive():
+        if (
+            self._stats_timer is not None
+            and self._proxy_manager().is_running
+            and self._page_is_interactively_visible()
+            and not self._stats_timer.isActive()
+        ):
             self._stats_timer.start(2000)
             self._emit_stats_if_visible()
         self._log_ui_timing("telegram_proxy_ui.show_event.total", started_at)

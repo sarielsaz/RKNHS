@@ -5,7 +5,7 @@ from __future__ import annotations
 from config.build_info import APP_VERSION
 
 APP_DISPLAY_NAME = "RKNHS"
-APP_TAGLINE = "РКН сосет хуй"
+APP_TAGLINE = "DPI console · VPN Split"
 APP_SHORT_TITLE = APP_DISPLAY_NAME
 FORK_AUTHOR = "Sazzero"
 FORK_DESCRIPTION = (
@@ -27,6 +27,29 @@ HIDE_DONATE_NAV = True
 # Hide Obsidian/GitHub/community/training links across the UI.
 HIDE_EXTERNAL_LINKS = True
 
+# Hide license activation UI on About (keys still work via startup gate if enabled).
+HIDE_LICENSE_UI = True
+
+TELEGRAM_CONTACT_URL = "https://t.me/Alybion"
+TELEGRAM_CONTACT_LABEL = "@Alybion"
+
+ABOUT_INTRO = (
+    "RKNHS — Windows-приложение для обхода DPI-блокировок и аккуратного "
+    "разделения трафика. Собственная модификация Sazzero на базе экосистемы "
+    "Zapret / winws2: один экран для запуска обхода, VPN Split и Telegram."
+)
+
+ABOUT_FEATURES = (
+    "DPI / winws2 — пресеты и сценарии обхода прямо из трея или окна",
+    "VPN Split — только нужные домены и подсети через AmneziaWG, остальное мимо VPN",
+    "Telegram — локальный прокси или маршруты через VPN при жёстком блоке IP",
+    "Трей, автозапуск и установщик с обновлением без сброса ваших настроек",
+)
+
+ABOUT_REQUIREMENTS_NOTE = (
+    "Обычный обход сайтов через DPI работает сам по себе. "
+    "VPN Split нужен отдельно установленный AmneziaWG и ваш .conf."
+)
 
 def window_title() -> str:
     return f"{APP_DISPLAY_NAME} // console · v{APP_VERSION}"

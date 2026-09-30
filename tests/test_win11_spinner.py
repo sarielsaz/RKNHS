@@ -33,7 +33,7 @@ class Win11SpinnerTests(unittest.TestCase):
         Win11Spinner.start(spinner)
         Win11Spinner.start(spinner)
 
-        self.assertEqual(timer.start_calls, [16])
+        self.assertEqual(timer.start_calls, [33])
         self.assertEqual(spinner.show.call_count, 1)
 
     def test_stop_skips_stopping_inactive_timer(self) -> None:

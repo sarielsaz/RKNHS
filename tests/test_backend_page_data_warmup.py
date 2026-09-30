@@ -58,19 +58,18 @@ class BackendPageDataWarmupTests(unittest.TestCase):
             queued_tasks,
             [
                 ("appearance", "BackendPageDataWarmup-Appearance"),
-                ("logs", "BackendPageDataWarmup-Logs"),
                 ("premium", "BackendPageDataWarmup-Premium"),
             ],
         )
         premium_feature.warm_page_data_cache.assert_called_once_with()
-        logs_feature.warm_page_data_cache.assert_called_once_with()
+        logs_feature.warm_page_data_cache.assert_not_called()
         warm_appearance.assert_called_once_with()
         self.assertFalse(hasattr(startup_host, "warm_page"))
         metric.assert_any_call(
             "StartupBackendPageDataWarmupQueued",
             "8000ms after interactive; premium 18000ms after interactive",
         )
-        metric.assert_any_call("StartupBackendPageDataWarmupStarted", "appearance, logs")
+        metric.assert_any_call("StartupBackendPageDataWarmupStarted", "appearance")
         metric.assert_any_call("StartupBackendPageDataWarmupStarted", "premium")
 
     def test_hosts_page_data_is_warmed_in_background_without_page_host(self) -> None:
@@ -117,11 +116,15 @@ class BackendPageDataWarmupTests(unittest.TestCase):
             )
             signal.emit("interactive")
 
-        self.assertEqual(delays, [1000])
+        expected_delay = post_startup_hosts_warmup.HOSTS_PAGE_WARMUP_DELAY_MS
+        self.assertEqual(delays, [expected_delay])
         self.assertEqual(queued_tasks, [("hosts", "HostsPageDataWarmup")])
         hosts_feature.warm_page_data_cache.assert_called_once_with()
         self.assertFalse(hasattr(startup_host, "ensure_page"))
-        metric.assert_any_call("StartupHostsPageWarmupQueued", "1000ms after interactive")
+        metric.assert_any_call(
+            "StartupHostsPageWarmupQueued",
+            f"{expected_delay}ms after interactive",
+        )
         metric.assert_any_call("StartupHostsPageWarmupStarted", "backend_cache")
         metric.assert_any_call("StartupHostsPageWarmupFinished", "backend_cache")
 

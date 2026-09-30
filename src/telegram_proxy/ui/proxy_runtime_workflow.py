@@ -313,6 +313,7 @@ def apply_status_changed(
     relay_check_gen: int,
     set_speed_state,
     set_generation,
+    status_hint=None,
 ) -> None:
     plan = telegram_proxy_page_runtime.build_status_plan(
         running=bool(running),
@@ -350,6 +351,9 @@ def apply_status_changed(
         )
     port_spin.setEnabled(plan.port_spin_enabled)
     host_edit.setEnabled(plan.host_edit_enabled)
+    if status_hint is not None:
+        show_hint = (not running) and (not restarting) and (not starting)
+        status_hint.setVisible(show_hint)
 
 
 def apply_stats_updated(

@@ -1,0 +1,2 @@
+CHANNEL='dev'
+APP_VERSION='21.1.0.19-local'

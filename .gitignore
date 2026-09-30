@@ -61,7 +61,6 @@ CLAUDE.md
 AGENTS.md
 .claude/
 .editorconfig
-src/config/build_info.py
 /docs/changelog
 docs/gui_preset_profile_architecture_plan.md
 www_youtube_com.txt

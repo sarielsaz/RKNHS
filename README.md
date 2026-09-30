@@ -37,6 +37,12 @@
 
 ---
 
+## Версия и история изменений
+
+- Текущая версия: файл [`src/config/build_info.py`](src/config/build_info.py) (`APP_VERSION`, `CHANNEL`)
+- Журнал релизов с **21.1.0.19**: [`CHANGELOG.md`](CHANGELOG.md)
+- На GitHub Releases — установщики и краткие release notes к каждому тегу
+
 ## Стек
 
 - **Python 3.13**, **PyQt6**, **PyQt6-Fluent-Widgets**

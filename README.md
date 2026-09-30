@@ -127,4 +127,5 @@ python installer\build_installer.py
 
 ## Контакты
 
-GitHub: [github.com/sarielsaz/RKNHS](https://github.com/sarielsaz/RKNHS)
+- GitHub: [github.com/sarielsaz/RKNHS](https://github.com/sarielsaz/RKNHS)
+- Telegram автора: [t.me/Alybion](https://t.me/Alybion) — можно написать по вопросам проекта

@@ -849,6 +849,14 @@ def build_premium_status_plan(
     was_snowflakes_enabled: bool,
     premium_effects: AppearancePremiumEffectsPlan,
 ) -> AppearancePremiumStatusPlan:
+    try:
+        from app.branding import FORCE_PREMIUM_UI
+
+        if FORCE_PREMIUM_UI:
+            is_premium = True
+    except Exception:
+        pass
+
     effective_preset = None
     if not is_premium and current_preset in ("amoled", "rkn_chan"):
         effective_preset = "standard"

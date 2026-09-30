@@ -26,11 +26,17 @@ class ControlTopSummaryState:
         preset_tooltip: str,
         profile_count: int | None,
         profile_tab_visible: bool = True,
+        preset_details: str = "",
+        preset_scope: str = "",
+        dpi_running: bool = False,
     ):
         self.preset_text = str(preset_text or "")
         self.preset_tooltip = str(preset_tooltip or "")
         self.profile_count = profile_count
         self.profile_tab_visible = bool(profile_tab_visible)
+        self.preset_details = str(preset_details or "")
+        self.preset_scope = str(preset_scope or "")
+        self.dpi_running = bool(dpi_running)
 
 
 def create_additional_settings_worker(request_id: int, create_load_worker, *, launch_method: str, parent=None):
@@ -73,6 +79,8 @@ def create_top_summary_worker(
     *,
     launch_method: str,
     get_enabled_profile_count_fallback=None,
+    is_dpi_running=None,
+    language: str = "ru",
     parent=None,
 ):
     clean_launch_method = str(launch_method or "").strip()
@@ -106,22 +114,50 @@ def create_top_summary_worker(
                 log(f"ControlTopSummaryWorker: не удалось пересчитать количество profile: {exc}", "DEBUG")
 
         profile_tab_visible = True
+        source_text = ""
         if callable(read_selected_preset_source):
             try:
                 from profile.winws2_preset_source import is_winws2_circular_preset_source
                 from settings.mode import is_zapret2_launch_method
 
+                source_text, _manifest = read_selected_preset_source(clean_launch_method)
+                source_text = str(source_text or "")
                 if is_zapret2_launch_method(clean_launch_method):
-                    source_text, _manifest = read_selected_preset_source(clean_launch_method)
-                    profile_tab_visible = not is_winws2_circular_preset_source(str(source_text or ""))
+                    profile_tab_visible = not is_winws2_circular_preset_source(source_text)
             except Exception as exc:
                 log(f"ControlTopSummaryWorker: не удалось проверить circular preset: {exc}", "DEBUG")
+
+        dpi_running = False
+        if callable(is_dpi_running):
+            try:
+                dpi_running = bool(is_dpi_running())
+            except Exception:
+                dpi_running = False
+
+        preset_details = ""
+        preset_scope = ""
+        try:
+            from presets.preset_clarity import build_preset_hud_clarity
+
+            clarity = build_preset_hud_clarity(
+                file_name=preset_tooltip or preset_text,
+                source_text=source_text,
+                dpi_running=dpi_running,
+                language=str(language or "ru"),
+            )
+            preset_details = clarity.details
+            preset_scope = str(clarity.scope.value)
+        except Exception as exc:
+            log(f"ControlTopSummaryWorker: не удалось построить clarity: {exc}", "DEBUG")
 
         return ControlTopSummaryState(
             preset_text=preset_text,
             preset_tooltip=preset_tooltip,
             profile_count=profile_count,
             profile_tab_visible=profile_tab_visible,
+            preset_details=preset_details,
+            preset_scope=preset_scope,
+            dpi_running=dpi_running,
         )
 
     return ControlTopSummaryWorker(

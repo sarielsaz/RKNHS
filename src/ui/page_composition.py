@@ -24,6 +24,7 @@ from ui.page_deps.system import (
     build_servers_page_kwargs,
     build_support_page_kwargs,
     build_telegram_proxy_page_kwargs,
+    build_vpn_split_page_kwargs,
 )
 from ui.page_deps.types import DnsPageDeps, HostsPageDeps, PremiumPageDeps
 
@@ -153,6 +154,7 @@ PAGE_DEPS_BUILDERS: dict[PageName, PageDepsSpec] = {
         build_telegram_proxy_page_kwargs,
         features=("runtime", "telegram_proxy"),
     ),
+    PageName.VPN_SPLIT: PageDepsSpec(build_vpn_split_page_kwargs, features=("runtime",)),
     PageName.ORCHESTRA: PageDepsSpec(
         build_orchestra_page_kwargs,
         features=("orchestra", "runtime"),

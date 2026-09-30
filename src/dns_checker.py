@@ -475,14 +475,14 @@ class DNSChecker:
         # Итоговое заключение
         if results['summary']['dns_poisoning_detected']:
             self._log("⚠️ ТРЕБУЕТСЯ ДЕЙСТВИЕ:", log_callback, should_stop)
-            self._log("Обнаружена DNS подмена! Смените DNS или используйте Zapret.", log_callback, should_stop)
+            self._log("Обнаружена DNS подмена! Смените DNS или используйте RKNHS.", log_callback, should_stop)
         elif working_dns_count == 0:
             self._log("💡 РЕКОМЕНДАЦИЯ:", log_callback, should_stop)
             self._log("DNS работает корректно, но внешние DNS недоступны.", log_callback, should_stop)
-            self._log("Если есть проблемы с сайтами - используйте Zapret для обхода DPI.", log_callback, should_stop)
+            self._log("Если есть проблемы с сайтами - используйте RKNHS для обхода DPI.", log_callback, should_stop)
         else:
             self._log("✅ РЕЗУЛЬТАТ:", log_callback, should_stop)
-            self._log("DNS работает корректно. Если сайты недоступны - используйте Zapret.", log_callback, should_stop)
+            self._log("DNS работает корректно. Если сайты недоступны - используйте RKNHS.", log_callback, should_stop)
     
     @staticmethod
     def _is_stop_requested(should_stop=None) -> bool:

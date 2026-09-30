@@ -33,7 +33,7 @@ def request_admin_restart(
                 "1. Нажмите правой кнопкой на файле программы\n"
                 "2. Выберите 'Запуск от имени администратора'"
             ),
-            failure_title or "Zapret - Ошибка получения прав",
+            failure_title or "RKNHS - Ошибка получения прав",
             0x10  # MB_ICONERROR
         )
         return False
@@ -43,10 +43,10 @@ def request_admin_restart(
     result = ctypes.windll.user32.MessageBoxW(
         None,
         prompt_message or (
-            "Zapret требует права администратора для корректной работы.\n\n"
+            "RKNHS требует права администратора для корректной работы.\n\n"
             "Нажмите OK для перезапуска с правами администратора."
         ),
-        prompt_title or "Zapret - Требуются права администратора",
+        prompt_title or "RKNHS - Требуются права администратора",
         0x41  # MB_OKCANCEL | MB_ICONINFORMATION
     )
 
@@ -82,7 +82,7 @@ def request_admin_restart(
                         "Не удалось запустить приложение с правами администратора.\n"
                         "Возможно, UAC заблокировал запрос."
                     ),
-                    failure_title or "Zapret - Ошибка",
+                    failure_title or "RKNHS - Ошибка",
                     0x10  # MB_ICONERROR
                 )
 
@@ -91,7 +91,7 @@ def request_admin_restart(
             ctypes.windll.user32.MessageBoxW(
                 None,
                 f"Ошибка при попытке получить права администратора:\n{str(e)}",
-                "Zapret - Ошибка",
+                "RKNHS - Ошибка",
                 0x10  # MB_ICONERROR
             )
 

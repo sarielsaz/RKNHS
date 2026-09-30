@@ -55,10 +55,12 @@ def _set_stylesheet_if_changed(widget, qss: str) -> None:
 
 
 def _apply_setting_card_text_styles(title_label, desc_label, tokens=None) -> None:
-    theme_tokens = tokens or get_theme_tokens()
+    from ui.tech_style import resolve_tech_tokens
+
+    theme_tokens = resolve_tech_tokens(tokens)
     font_family = str(getattr(theme_tokens, "font_family_qss", "") or "'Segoe UI Variable', 'Segoe UI', Arial, sans-serif")
-    title_color = str(getattr(theme_tokens, "fg", "") or "rgba(255, 255, 255, 0.92)")
-    desc_color = str(getattr(theme_tokens, "fg_muted", "") or "rgba(255, 255, 255, 0.65)")
+    title_color = str(getattr(theme_tokens, "fg", "") or "rgba(235, 242, 250, 0.94)")
+    desc_color = str(getattr(theme_tokens, "fg_muted", "") or "rgba(180, 194, 210, 0.72)")
     _set_stylesheet_if_changed(
         title_label,
         (
@@ -343,8 +345,11 @@ class Win11RadioOption(FluentSettingCard):
                 self._badge_label = InfoBadge(recommended_badge, level=_InfoLevel.ATTENTION)
             else:
                 self._badge_label = QLabel(recommended_badge)
+                tokens = get_theme_tokens()
                 self._badge_label.setStyleSheet(
-                    "QLabel { background: #0078d4; color: #fff; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px; }"
+                    f"QLabel {{ background: {tokens.accent_hex}; color: {tokens.accent_fg}; "
+                    f"font-family: {tokens.font_mono_qss}; font-size: 10px; font-weight: 600; "
+                    f"padding: 2px 6px; border-radius: {tokens.radius_sm}; }}"
                 )
             self.hBoxLayout.insertWidget(max(0, self.hBoxLayout.count() - 1), self._badge_label, 0, Qt.AlignmentFlag.AlignRight)
 

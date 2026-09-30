@@ -8,7 +8,7 @@ from typing import Callable
 
 MIN_WINDOWS_10_1809_BUILD = 17763
 CONSOLE_VERSION_URL = "https://t.me/bypassblock/666"
-WINDOWS_VERSION_ERROR_TITLE = "Zapret — неподдерживаемая Windows"
+WINDOWS_VERSION_ERROR_TITLE = "RKNHS — неподдерживаемая Windows"
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,7 +42,7 @@ def _old_windows_name(major: int, minor: int) -> str:
 def _unsupported_message(os_name: str) -> str:
     return (
         f"Обнаружена неподдерживаемая система: {os_name}\n\n"
-        "GUI-версия Zapret требует Windows 10 1809 или новее "
+        "GUI-версия RKNHS требует Windows 10 1809 или новее "
         f"(build {MIN_WINDOWS_10_1809_BUILD}+).\n\n"
         "Для вашей операционной системы доступна консольная версия:\n"
         f"{CONSOLE_VERSION_URL}\n\n"

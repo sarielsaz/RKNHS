@@ -13,7 +13,7 @@ from ui.segmented_accessibility import set_segmented_items_accessibility
 _TAB_ACCESSIBLE_LABELS = {
     "about": "О программе",
     "help": "Справка",
-    "kvn": "Zapret KVN",
+    "kvn": "Sazzero",
 }
 
 
@@ -81,9 +81,16 @@ def build_about_page_tabs(*, tr_fn, on_switch_tab) -> AboutPageTabsWidgets:
         text=" " + tr_fn("page.about.tab.help", "СПРАВКА"),
         onClick=lambda: on_switch_tab(1),
     )
+    try:
+        from app.branding import FORK_AUTHOR
+
+        kvn_tab_label = f" {FORK_AUTHOR.upper()}"
+    except Exception:
+        kvn_tab_label = " SAZZERO"
+
     tabs_pivot.addItem(
         routeKey="kvn",
-        text=" ZAPRET KVN",
+        text=kvn_tab_label,
         onClick=lambda: on_switch_tab(2),
     )
     tabs_pivot.setCurrentItem("about")

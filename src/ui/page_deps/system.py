@@ -63,8 +63,8 @@ def build_support_page_kwargs(*, page_name: PageName, external_actions_feature) 
 
         actions = {
             "discussions": about_commands.open_support_discussions,
-            "telegram": lambda: about_commands.open_telegram("zaprethelp"),
-            "discord": lambda: about_commands.open_discord("https://discord.gg/kkcBDG2uws"),
+            "telegram": lambda: about_commands.open_telegram("sazzero"),
+            "discord": lambda: about_commands.open_discord("https://github.com/Sazzero"),
         }
         return external_actions_feature.create_external_action_worker(
             request_id,
@@ -131,14 +131,14 @@ def build_about_page_kwargs(*, page_name: PageName, external_actions_feature, sh
 
         actions = {
             "support_discussions": about_commands.open_support_discussions,
-            "support_telegram": lambda: about_commands.open_telegram("zaprethelp"),
-            "support_discord": lambda: about_commands.open_discord("https://discord.gg/kkcBDG2uws"),
+            "support_telegram": lambda: about_commands.open_telegram("sazzero"),
+            "support_discord": lambda: about_commands.open_discord("https://github.com/Sazzero"),
             "forum_for_beginners": about_commands.open_docs_home,
-            "telegram_news": lambda: about_commands.open_telegram("bypassblock"),
-            "kvn_channel": lambda: about_commands.open_telegram("vpndiscordyooutube"),
-            "kvn_bot": lambda: about_commands.open_telegram("zapretvpns_bot"),
-            "kvn_bypass": lambda: about_commands.open_telegram("bypassblock"),
-            "kvn_github": lambda: about_commands.open_github("https://github.com/youtubediscord/zapret-kvn"),
+            "telegram_news": lambda: about_commands.open_telegram("sazzero"),
+            "kvn_channel": lambda: about_commands.open_telegram("sazzero"),
+            "kvn_bot": lambda: about_commands.open_telegram("sazzero"),
+            "kvn_bypass": lambda: about_commands.open_telegram("sazzero"),
+            "kvn_github": lambda: about_commands.open_github("https://github.com/Sazzero"),
         }
         return external_actions_feature.create_external_action_worker(
             request_id,
@@ -249,6 +249,18 @@ def build_orchestra_settings_page_kwargs(*, page_name: PageName, orchestra_featu
     }
 
 
+def build_vpn_split_page_kwargs(*, page_name: PageName, runtime_feature) -> dict:
+    _ = page_name
+
+    def restart_winws() -> bool:
+        try:
+            return bool(runtime_feature.restart(force_full_stop=False))
+        except Exception:
+            return False
+
+    return {"restart_winws": restart_winws}
+
+
 __all__ = [
     "build_about_page_kwargs",
     "build_appearance_page_kwargs",
@@ -264,4 +276,5 @@ __all__ = [
     "build_servers_page_kwargs",
     "build_support_page_kwargs",
     "build_telegram_proxy_page_kwargs",
+    "build_vpn_split_page_kwargs",
 ]

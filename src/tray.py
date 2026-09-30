@@ -27,6 +27,8 @@ if sys.platform == "win32":
     user32 = ctypes.windll.user32
     shell32 = ctypes.windll.shell32
     kernel32 = ctypes.windll.kernel32
+    # Python 3.12+ no longer exposes HCURSOR in ctypes.wintypes.
+    _WT_HCURSOR = getattr(wintypes, "HCURSOR", wintypes.HANDLE)
     _PTR_IS_64 = ctypes.sizeof(ctypes.c_void_p) == 8
     WPARAM = ctypes.c_uint64 if _PTR_IS_64 else ctypes.c_uint
     LPARAM = ctypes.c_int64 if _PTR_IS_64 else ctypes.c_long
@@ -150,7 +152,7 @@ if sys.platform == "win32":
             ("cbWndExtra", ctypes.c_int),
             ("hInstance", wintypes.HINSTANCE),
             ("hIcon", wintypes.HICON),
-            ("hCursor", wintypes.HCURSOR),
+            ("hCursor", _WT_HCURSOR),
             ("hbrBackground", wintypes.HBRUSH),
             ("lpszMenuName", wintypes.LPCWSTR),
             ("lpszClassName", wintypes.LPCWSTR),
@@ -270,11 +272,19 @@ class SystemTrayManager:
         self._show_window_action = None
         self._tg_proxy_action = None
         self._exit_stop_action = None
+        self._start_bypass_action = None
+        self._stop_bypass_action = None
+        self._light_scope_action = None
+        self._wide_scope_action = None
         self._tray_menu_min_width = 336
         self._tray_submenu_min_width = 252
         self._toggle_request_pending = False
         self._last_toggle_monotonic = 0.0
         self._icon_handle = None
+        self._status_icon_running_handle = None
+        self._status_icon_stopped_handle = None
+        self._winws2_running: bool | None = None
+        self._status_poll_timer = None
         self._message_window = None
         self._taskbar_created_message = None
         self._class_name = f"Zapret2TrayWindow_{os.getpid()}"
@@ -285,8 +295,64 @@ class SystemTrayManager:
 
         self._create_native_backend()
 
+    def install_status_polling(self, *, interval_ms: int = 5000) -> None:
+        if sys.platform != "win32":
+            return
+        timer = QTimer()
+        timer.setInterval(max(1000, int(interval_ms)))
+        timer.timeout.connect(self.refresh_winws2_status_icon)
+        timer.start()
+        self._status_poll_timer = timer
+        self.refresh_winws2_status_icon()
+
+    def refresh_winws2_status_icon(self) -> None:
+        if sys.platform != "win32" or not self._hwnd:
+            return
+        try:
+            from tray_status_icon import is_winws2_running, load_status_icon_handle
+            from app.branding import tray_tooltip
+
+            running = bool(is_winws2_running())
+            if self._winws2_running == running and self._icon_visible:
+                data = self._build_notify_icon_data(NIF_ICON | NIF_TIP | NIF_SHOWTIP)
+                data.szTip = _truncate_text(tray_tooltip(winws2_running=running), 128)
+                shell32.Shell_NotifyIconW(NIM_MODIFY, ctypes.byref(data))
+                return
+
+            self._winws2_running = running
+            next_handle = load_status_icon_handle(running=running)
+            if not next_handle:
+                return
+
+            previous = self._icon_handle
+            self._icon_handle = next_handle
+            data = self._build_notify_icon_data(NIF_ICON | NIF_TIP | NIF_SHOWTIP)
+            data.szTip = _truncate_text(tray_tooltip(winws2_running=running), 128)
+            if self._icon_visible:
+                shell32.Shell_NotifyIconW(NIM_MODIFY, ctypes.byref(data))
+            else:
+                self._add_icon()
+
+            if previous and previous not in (
+                self._status_icon_running_handle,
+                self._status_icon_stopped_handle,
+            ):
+                try:
+                    user32.DestroyIcon(previous)
+                except Exception:
+                    pass
+        except Exception as e:
+            log(f"Не удалось обновить tray status icon: {e}", "DEBUG")
+
     def _create_native_backend(self) -> None:
-        self._icon_handle = self._load_icon_handle(self.icon_path)
+        try:
+            from tray_status_icon import is_winws2_running, load_status_icon_handle
+
+            running = bool(is_winws2_running())
+            self._winws2_running = running
+            self._icon_handle = load_status_icon_handle(running=running) or self._load_icon_handle(self.icon_path)
+        except Exception:
+            self._icon_handle = self._load_icon_handle(self.icon_path)
         self._message_window = _TrayMessageWindow(self)
         self._taskbar_created_message = self._message_window.taskbar_created_message
         self._add_icon()
@@ -326,7 +392,10 @@ class SystemTrayManager:
         data.uFlags = flags
         data.uCallbackMessage = TRAY_CALLBACK_MESSAGE
         data.hIcon = self._icon_handle
-        data.szTip = _truncate_text(f"Zapret2 v{self.app_version}", 128)
+        from app.branding import tray_tooltip
+
+        running = self._winws2_running
+        data.szTip = _truncate_text(tray_tooltip(winws2_running=running), 128)
         return data
 
     @property
@@ -497,6 +566,44 @@ class SystemTrayManager:
 
         menu.addSeparator()
 
+        start_bypass_action = _make_menu_action(
+            "Запустить обход",
+            icon=_fluent_icon("PLAY"),
+            parent=menu,
+        )
+        start_bypass_action.triggered.connect(self._start_bypass_from_tray)
+        menu.addAction(start_bypass_action)
+        self._start_bypass_action = start_bypass_action
+
+        stop_bypass_action = _make_menu_action(
+            "Остановить обход",
+            icon=_fluent_icon("PAUSE"),
+            parent=menu,
+        )
+        stop_bypass_action.triggered.connect(self._stop_bypass_from_tray)
+        menu.addAction(stop_bypass_action)
+        self._stop_bypass_action = stop_bypass_action
+
+        light_action = _make_menu_action(
+            "Режим LIGHT",
+            icon=_fluent_icon("SPEED_OFF"),
+            parent=menu,
+        )
+        light_action.triggered.connect(self._apply_light_from_tray)
+        menu.addAction(light_action)
+        self._light_scope_action = light_action
+
+        wide_action = _make_menu_action(
+            "Режим WIDE",
+            icon=_fluent_icon("SPEED_HIGH"),
+            parent=menu,
+        )
+        wide_action.triggered.connect(self._apply_wide_from_tray)
+        menu.addAction(wide_action)
+        self._wide_scope_action = wide_action
+
+        menu.addSeparator()
+
         tg_proxy_action = _make_menu_action(
             "Telegram Proxy: выкл",
             icon=_fluent_icon("SEND"),
@@ -540,6 +647,19 @@ class SystemTrayManager:
     def _sync_menu_state(self, state: dict) -> None:
         if self._show_window_action is not None:
             self._show_window_action.setText("Скрыть в трей" if state["is_visible"] else "Показать")
+
+        running = bool(state.get("is_launch_running"))
+        phase = str(state.get("launch_phase") or "").strip().lower()
+        busy = phase in {"autostart_pending", "starting", "stopping"}
+
+        if getattr(self, "_start_bypass_action", None) is not None:
+            self._start_bypass_action.setEnabled(not running and not busy)
+        if getattr(self, "_stop_bypass_action", None) is not None:
+            self._stop_bypass_action.setEnabled(running or busy)
+        if getattr(self, "_light_scope_action", None) is not None:
+            self._light_scope_action.setEnabled(not busy)
+        if getattr(self, "_wide_scope_action", None) is not None:
+            self._wide_scope_action.setEnabled(not busy)
 
         if self._tg_proxy_action is not None:
             self._tg_proxy_action.setText(state["tg_proxy_label"])
@@ -722,6 +842,62 @@ class SystemTrayManager:
     def _toggle_tg_proxy(self):
         self._tray_feature.toggle_telegram_proxy()
 
+    def _start_bypass_from_tray(self) -> None:
+        ok = False
+        try:
+            ok = bool(self._tray_feature.start_bypass())
+        except Exception as e:
+            log(f"Не удалось запустить обход из трея: {e}", "WARNING")
+        try:
+            self.show_notification(
+                "Обход",
+                "Запуск…" if ok else "Не удалось запустить",
+            )
+        except Exception:
+            pass
+
+    def _stop_bypass_from_tray(self) -> None:
+        ok = False
+        try:
+            ok = bool(self._tray_feature.stop_bypass())
+        except Exception as e:
+            log(f"Не удалось остановить обход из трея: {e}", "WARNING")
+        try:
+            self.show_notification(
+                "Обход",
+                "Остановка…" if ok else "Не удалось остановить",
+            )
+        except Exception:
+            pass
+
+    def _apply_light_from_tray(self) -> None:
+        chosen = None
+        try:
+            chosen = self._tray_feature.apply_light_scope()
+        except Exception as e:
+            log(f"Не удалось включить LIGHT из трея: {e}", "WARNING")
+        try:
+            self.show_notification(
+                "Режим LIGHT",
+                f"Пресет: {chosen}" if chosen else "Подходящий пресет не найден",
+            )
+        except Exception:
+            pass
+
+    def _apply_wide_from_tray(self) -> None:
+        chosen = None
+        try:
+            chosen = self._tray_feature.apply_wide_scope()
+        except Exception as e:
+            log(f"Не удалось включить WIDE из трея: {e}", "WARNING")
+        try:
+            self.show_notification(
+                "Режим WIDE",
+                f"Пресет: {chosen}" if chosen else "Подходящий пресет не найден",
+            )
+        except Exception:
+            pass
+
     def _on_tg_proxy_status_changed(self, running: bool):
         self._tray_feature.set_telegram_proxy_enabled(bool(running))
 
@@ -734,6 +910,22 @@ class SystemTrayManager:
             strategies_tooltip_manager.hide_immediately()
         except Exception:
             pass
+
+    def _ensure_tray_icon_visible(self) -> bool:
+        if sys.platform != "win32":
+            return True
+        if self._icon_visible:
+            return True
+        if not self._message_window:
+            try:
+                self._create_native_backend()
+            except Exception as exc:
+                log(f"Не удалось инициализировать native tray backend: {exc}", "WARNING")
+                return False
+        if not self._icon_handle:
+            self._icon_handle = self._load_icon_handle(self.icon_path)
+        self._add_icon()
+        return bool(self._icon_visible)
 
     def hide_to_tray(self, show_hint: bool = True) -> bool:
         try:
@@ -751,6 +943,10 @@ class SystemTrayManager:
         except Exception:
             pass
 
+        if not self._ensure_tray_icon_visible():
+            log("Свернуть в трей нельзя: иконка в системном трее не создана", "WARNING")
+            return False
+
         try:
             self.window_port.hide()
         except Exception as e:
@@ -763,7 +959,7 @@ class SystemTrayManager:
         if not self._tray_hint_shown_this_session:
             try:
                 self.show_notification(
-                    "Zapret продолжает работать",
+                    "RKNHS продолжает работать",
                     "Свернуто в трей. Кликните по иконке, чтобы открыть окно.",
                 )
                 self._tray_hint_shown_this_session = True

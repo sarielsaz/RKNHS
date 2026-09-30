@@ -34,10 +34,10 @@ class WindowUiFacadeLazyImportTests(unittest.TestCase):
         widget = widget_cls()
         self.addCleanup(widget.deleteLater)
 
-        self.assertEqual(widget.accessibleName(), "Глобальный поиск по ZapretGUI")
+        self.assertEqual(widget.accessibleName(), "Глобальный поиск по RKNHS")
         self.assertIn("выберите результат стрелками", widget.accessibleDescription())
         self.assertIn("Enter открывает выбранный результат", widget.accessibleDescription())
-        self.assertEqual(widget._search.accessibleName(), "Глобальный поиск по ZapretGUI")
+        self.assertEqual(widget._search.accessibleName(), "Глобальный поиск по RKNHS")
         self.assertIn("Enter открывает выбранный результат", widget._search.accessibleDescription())
 
         search_buttons = [
@@ -84,10 +84,10 @@ class WindowUiFacadeLazyImportTests(unittest.TestCase):
 
         widget.clear()
 
-        self.assertEqual(widget.accessibleName(), "Глобальный поиск по ZapretGUI")
-        self.assertEqual(widget.property("screenReaderStateText"), "Глобальный поиск по ZapretGUI")
-        self.assertEqual(widget._search.accessibleName(), "Глобальный поиск по ZapretGUI")
-        self.assertEqual(widget._search.property("screenReaderStateText"), "Глобальный поиск по ZapretGUI")
+        self.assertEqual(widget.accessibleName(), "Глобальный поиск по RKNHS")
+        self.assertEqual(widget.property("screenReaderStateText"), "Глобальный поиск по RKNHS")
+        self.assertEqual(widget._search.accessibleName(), "Глобальный поиск по RKNHS")
+        self.assertEqual(widget._search.property("screenReaderStateText"), "Глобальный поиск по RKNHS")
 
 
 if __name__ == "__main__":

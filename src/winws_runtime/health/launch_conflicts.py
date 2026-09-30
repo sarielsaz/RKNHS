@@ -12,17 +12,17 @@ CONFLICTING_PROCESSES = {
     "ProcessHacker.exe": {
         "name": "Process Hacker",
         "reason": "Перехватывает системные вызовы и может блокировать WinDivert",
-        "solution": "Закройте Process Hacker и повторите запуск Zapret",
+        "solution": "Закройте Process Hacker и повторите запуск RKNHS",
     },
     "procexp.exe": {
         "name": "Process Explorer",
         "reason": "Может конфликтовать с WinDivert",
-        "solution": "Закройте Process Explorer и повторите запуск Zapret",
+        "solution": "Закройте Process Explorer и повторите запуск RKNHS",
     },
     "procexp64.exe": {
         "name": "Process Explorer (64-bit)",
         "reason": "Может конфликтовать с WinDivert",
-        "solution": "Закройте Process Explorer и повторите запуск Zapret",
+        "solution": "Закройте Process Explorer и повторите запуск RKNHS",
     },
     "GoodbyeDPI.exe": {
         "name": "GoodbyeDPI",
@@ -72,7 +72,7 @@ def check_conflicting_processes() -> List[Dict[str, str]]:
 
 
 def build_launch_conflict_advice() -> tuple[str, str] | None:
-    """Возвращает подсказку только после неудачного запуска Zapret."""
+    """Возвращает подсказку только после неудачного запуска RKNHS."""
     conflicting = check_conflicting_processes()
     if not conflicting:
         return None
@@ -87,8 +87,8 @@ def build_launch_conflict_advice() -> tuple[str, str] | None:
         if solution and solution not in solutions:
             solutions.append(solution)
 
-    cause = f"{names}, похоже, помешал запуску Zapret: WinDivert не смог открыться"
-    solution = "\n".join(solutions) or "Закройте конфликтующую программу и повторите запуск Zapret"
+    cause = f"{names}, похоже, помешал запуску RKNHS: WinDivert не смог открыться"
+    solution = "\n".join(solutions) or "Закройте конфликтующую программу и повторите запуск RKNHS"
     return cause, solution
 
 
@@ -147,5 +147,5 @@ def get_conflicting_processes_report() -> str:
         lines.append(f"   Решение: {conflict['solution']}")
         lines.append("")
 
-    lines.append("Закройте эти программы, если запуск Zapret завершился ошибкой.")
+    lines.append("Закройте эти программы, если запуск RKNHS завершился ошибкой.")
     return "\n".join(lines)

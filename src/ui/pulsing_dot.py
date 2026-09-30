@@ -18,7 +18,7 @@ class PulsingDot(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self._timer = QTimer(self)
-        self._timer.setInterval(100)
+        self._timer.setInterval(70)
         self._timer.timeout.connect(self._tick)
 
     def set_color(self, color: str) -> None:
@@ -59,7 +59,7 @@ class PulsingDot(QWidget):
                 self._timer.start()
 
     def _tick(self) -> None:
-        self._pulse_phase = (self._pulse_phase + 0.1) % 1.0
+        self._pulse_phase = (self._pulse_phase + 0.14) % 1.0
         self.update()
 
     def paintEvent(self, event) -> None:  # noqa: N802
@@ -67,41 +67,25 @@ class PulsingDot(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        cx = self.width() / 2
-        cy = self.height() / 2
         side = max(12, min(self.width(), self.height()))
-        base_r = max(3.0, side * 0.1875)
-        pulse_extra = max(1.0, side / 2 - base_r - 1)
-        glow_extra = max(1.0, side * 0.09375)
+        # Square phosphor LED (operator console), not soft Win11 orb.
+        pad = max(2, int(side * 0.22))
+        box = self.rect().adjusted(pad, pad, -pad, -pad)
+        core = max(2, int(side * 0.18))
 
         if self._is_pulsing:
-            for phase_offset in (0.0, 0.5):
-                phase = (self._pulse_phase + phase_offset) % 1.0
-                opacity = max(0.0, 0.72 * (1.0 - phase))
-                radius = base_r + pulse_extra * phase
-                c = QColor(self._color)
-                c.setAlphaF(opacity)
-                painter.setPen(Qt.PenStyle.NoPen)
-                painter.setBrush(c)
-                r = int(radius)
-                painter.drawEllipse(int(cx - r), int(cy - r), r * 2, r * 2)
+            phase = self._pulse_phase % 1.0
+            glow = QColor(self._color)
+            glow.setAlphaF(max(0.0, 0.45 * (1.0 - phase)))
+            expand = int(2 + phase * max(2, side * 0.18))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(glow)
+            painter.drawRoundedRect(box.adjusted(-expand, -expand, expand, expand), 1, 1)
 
-        glow = QColor(self._color)
-        glow.setAlphaF(0.42)
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(glow)
-        glow_r = int(base_r + glow_extra)
-        painter.drawEllipse(
-            int(cx - glow_r),
-            int(cy - glow_r),
-            glow_r * 2,
-            glow_r * 2,
-        )
-
         painter.setBrush(self._color)
-        r = int(base_r)
-        painter.drawEllipse(int(cx - r), int(cy - r), r * 2, r * 2)
+        painter.drawRoundedRect(box, 1, 1)
 
-        painter.setBrush(QColor(255, 255, 255, 90))
-        shine = max(2, int(side * 0.09375))
-        painter.drawEllipse(int(cx - shine), int(cy - shine - 1), shine, shine)
+        shine = QColor(255, 255, 255, 90)
+        painter.setBrush(shine)
+        painter.drawRect(box.x() + 1, box.y() + 1, max(1, core), max(1, int(core * 0.6)))

@@ -2,6 +2,36 @@ from __future__ import annotations
 
 from ui.window_ui_session import get_window_ui_session
 
+_CANONICAL_ANIMATION_START = None
+
+
+def _ensure_canonical_animation_start():
+    """Сохраняет оригинальный QAbstractAnimation.start один раз."""
+    global _CANONICAL_ANIMATION_START
+    if _CANONICAL_ANIMATION_START is None:
+        from PyQt6.QtCore import QAbstractAnimation
+
+        _CANONICAL_ANIMATION_START = QAbstractAnimation.start
+    return _CANONICAL_ANIMATION_START
+
+
+def _animation_classes():
+    from PyQt6.QtCore import (
+        QAbstractAnimation,
+        QParallelAnimationGroup,
+        QPropertyAnimation,
+        QSequentialAnimationGroup,
+        QVariantAnimation,
+    )
+
+    return (
+        QAbstractAnimation,
+        QVariantAnimation,
+        QPropertyAnimation,
+        QSequentialAnimationGroup,
+        QParallelAnimationGroup,
+    )
+
 
 def are_animations_enabled() -> bool:
     """Читает текущее пользовательское состояние мастер-переключателя анимаций."""
@@ -71,28 +101,30 @@ def apply_window_animation_policy(window, enabled: bool) -> None:
 def apply_process_animation_fallback(enabled: bool) -> None:
     """Временно включает или отключает глобальный fallback для QPropertyAnimation."""
     try:
-        from PyQt6.QtCore import QAbstractAnimation, QPropertyAnimation
-
-        if enabled:
-            if hasattr(QPropertyAnimation, "_zapret_original_start"):
-                QPropertyAnimation.start = QPropertyAnimation._zapret_original_start
-                del QPropertyAnimation._zapret_original_start
-            return
-
-        if not hasattr(QPropertyAnimation, "_zapret_original_start"):
-            original_start = QPropertyAnimation.start
-            QPropertyAnimation._zapret_original_start = original_start
-
-            def _instant_start(
-                self,
-                policy=QAbstractAnimation.DeletionPolicy.KeepWhenStopped,
-            ):
-                self.setDuration(0)
-                QPropertyAnimation._zapret_original_start(self, policy)
-
-            QPropertyAnimation.start = _instant_start
+        from PyQt6.QtCore import QAbstractAnimation
     except Exception:
-        pass
+        return
+
+    canonical = _ensure_canonical_animation_start()
+    deletion_policy = QAbstractAnimation.DeletionPolicy
+
+    def _normal_start(self, policy=deletion_policy.KeepWhenStopped):
+        canonical(self, policy)
+
+    def _instant_start(self, policy=deletion_policy.KeepWhenStopped):
+        try:
+            self.setDuration(0)
+        except Exception:
+            pass
+        canonical(self, policy)
+
+    target = _normal_start if enabled else _instant_start
+    for cls in _animation_classes():
+        try:
+            if hasattr(cls, "start"):
+                setattr(cls, "start", target)
+        except Exception:
+            pass
 
 
 def apply_window_smooth_scroll_policy(window, enabled: bool) -> None:
@@ -161,3 +193,72 @@ def _iter_window_pages_and_children(window):
         yield page
         for child in page.findChildren(QWidget):
             yield child
+
+
+PAGE_ENTER_MS = 90
+BUTTON_PRESS_MS = 110
+
+
+def run_page_enter_animation(widget) -> None:
+    """Opacity 0→1 page enter (~150ms). No-op when animations are disabled."""
+    if widget is None or not are_animations_enabled():
+        return
+    try:
+        from PyQt6.QtCore import QEasingCurve, QPropertyAnimation
+        from PyQt6.QtWidgets import QGraphicsOpacityEffect
+
+        effect = QGraphicsOpacityEffect(widget)
+        widget.setGraphicsEffect(effect)
+        effect.setOpacity(0.0)
+        anim = QPropertyAnimation(effect, b"opacity", widget)
+        anim.setStartValue(0.0)
+        anim.setEndValue(1.0)
+        anim.setDuration(PAGE_ENTER_MS)
+        anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        register_managed_animation(anim, PAGE_ENTER_MS)
+
+        def _clear() -> None:
+            try:
+                widget.setGraphicsEffect(None)
+            except Exception:
+                pass
+
+        anim.finished.connect(_clear)
+        start_managed_animation(anim)
+        widget._rknhs_page_enter_anim = anim  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
+
+def run_press_feedback(widget) -> None:
+    """Brief opacity dip on primary press (≤120ms)."""
+    if widget is None or not are_animations_enabled():
+        return
+    try:
+        from PyQt6.QtCore import QEasingCurve, QPropertyAnimation, QSequentialAnimationGroup
+        from PyQt6.QtWidgets import QGraphicsOpacityEffect
+
+        effect = widget.graphicsEffect()
+        if not isinstance(effect, QGraphicsOpacityEffect):
+            effect = QGraphicsOpacityEffect(widget)
+            widget.setGraphicsEffect(effect)
+        effect.setOpacity(1.0)
+        down = QPropertyAnimation(effect, b"opacity", widget)
+        down.setStartValue(1.0)
+        down.setEndValue(0.86)
+        down.setDuration(max(1, BUTTON_PRESS_MS // 2))
+        down.setEasingCurve(QEasingCurve.Type.OutCubic)
+        up = QPropertyAnimation(effect, b"opacity", widget)
+        up.setStartValue(0.86)
+        up.setEndValue(1.0)
+        up.setDuration(max(1, BUTTON_PRESS_MS // 2))
+        up.setEasingCurve(QEasingCurve.Type.OutCubic)
+        group = QSequentialAnimationGroup(widget)
+        group.addAnimation(down)
+        group.addAnimation(up)
+        register_managed_animation(down, BUTTON_PRESS_MS // 2)
+        register_managed_animation(up, BUTTON_PRESS_MS // 2)
+        start_managed_animation(group)
+        widget._rknhs_press_anim = group  # type: ignore[attr-defined]
+    except Exception:
+        pass

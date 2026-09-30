@@ -72,7 +72,7 @@ def apply_service_profiles(hosts_manager, service_dns: dict[str, str]) -> HostsC
 
 def clear_hosts(hosts_manager) -> HostsCommandResult:
     success = bool(hosts_manager.clear_hosts_file())
-    message = "Записи ZapretGUI очищены" if success else getattr(hosts_manager, "last_status", None) or "Ошибка"
+    message = "Записи RKNHS очищены" if success else getattr(hosts_manager, "last_status", None) or "Ошибка"
     return HostsCommandResult(success=success, message=message)
 
 

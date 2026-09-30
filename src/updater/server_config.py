@@ -56,4 +56,4 @@ def should_verify_ssl() -> bool:
 # GITHUB (резервный источник)
 # ═══════════════════════════════════════════════════════════════
 
-GITHUB_REPO = "youtubediscord/zapret"
+GITHUB_REPO = "Sazzero/RKNHS"

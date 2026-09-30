@@ -51,16 +51,16 @@ class GuiAutostartContractTests(unittest.TestCase):
         from autostart import startup_shortcut_api
 
         shell = _FakeShell()
-        exe_path = r"C:\Program Files\Zapret\Zapret.exe"
+        exe_path = r"C:\Program Files\RKNHS\RKNHS.exe"
         shortcut_path = (
             r"C:\Users\Tester\AppData\Roaming\Microsoft\Windows\Start Menu"
-            r"\Programs\Startup\ZapretGUI.lnk"
+            r"\Programs\Startup\RKNHS.lnk"
         )
 
-        with patch.object(
-            startup_shortcut_api,
-            "_dispatch_shell",
-            return_value=shell,
+        with (
+            patch.object(startup_shortcut_api, "_dispatch_shell", return_value=shell),
+            patch.object(startup_shortcut_api, "delete_legacy_startup_shortcuts", return_value=0),
+            patch.object(Path, "mkdir", return_value=None),
         ):
             result = startup_shortcut_api.create_or_update_startup_shortcut(
                 exe_path,
@@ -71,7 +71,7 @@ class GuiAutostartContractTests(unittest.TestCase):
         self.assertEqual(shell.created_paths, [shortcut_path])
         self.assertEqual(shell.shortcut.TargetPath, exe_path)
         self.assertEqual(shell.shortcut.Arguments, "--tray")
-        self.assertEqual(shell.shortcut.WorkingDirectory, r"C:\Program Files\Zapret")
+        self.assertEqual(shell.shortcut.WorkingDirectory, r"C:\Program Files\RKNHS")
         self.assertEqual(shell.shortcut.IconLocation, exe_path)
         self.assertTrue(shell.shortcut.saved)
 

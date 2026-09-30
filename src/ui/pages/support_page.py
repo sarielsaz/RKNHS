@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from PyQt6.QtCore import QTimer
-from qfluentwidgets import InfoBar, PrimaryPushSettingCard, PushSettingCard, SettingCardGroup
+from qfluentwidgets import BodyLabel, CaptionLabel, InfoBar, PrimaryPushSettingCard, PushSettingCard, SettingCardGroup
 
 from app.ui_texts import tr as tr_catalog
 from ui.one_shot_worker_runtime import OneShotWorkerRuntime
@@ -43,6 +43,23 @@ class SupportPage(BasePage):
         return tr_catalog(key, language=self._ui_language, default=default)
 
     def _build_ui(self) -> None:
+        try:
+            from app.branding import FORK_DESCRIPTION, HIDE_EXTERNAL_LINKS
+
+            if HIDE_EXTERNAL_LINKS:
+                body = BodyLabel(FORK_DESCRIPTION, self.content)
+                body.setWordWrap(True)
+                self.add_widget(body)
+                note = CaptionLabel(
+                    "Страница поддержки upstream отключена в форке RKNHS.",
+                    self.content,
+                )
+                note.setWordWrap(True)
+                self.add_widget(note)
+                return
+        except Exception:
+            pass
+
         if SettingCardGroup is None or PushSettingCard is None or PrimaryPushSettingCard is None:
             raise RuntimeError("Stock qfluentwidgets setting cards недоступны для страницы поддержки")
 

@@ -16,8 +16,12 @@ from PyQt6.QtCore import Qt, QTimer
 from app.app_icon_resources import resolve_existing_app_icon_path
 from config.build_info import APP_VERSION
 
+from app.branding import window_title
+
 from log.log import log
 from main.runtime_state import log_startup_metric as emit_startup_metric
+from ui.tech_style import apply_tech_style_to_window
+from ui.theme_refresh import ThemeRefreshBinding
 
 
 
@@ -35,14 +39,54 @@ class ZapretFluentWindow(FluentWindow):
             "StartupFluentWindowSuper",
             f"{(_time.perf_counter() - t_super) * 1000:.0f}ms",
         )
-        self.setWindowTitle(f"Zapret2 v{APP_VERSION}")
+        self.setWindowTitle(window_title())
 
         self._app_icon = None
         self._app_icon_deferred_started = False
+        self._apply_app_icon_deferred()
         self._schedule_app_icon_after_interactive()
+
+        # Instant sidebar switches: PopUpAni still animates ~300ms when popOut=False
+        # unless the stack animation flag is cleared.
+        self._disable_stacked_page_animation()
+
+        # Ultra-tech chrome overlay (reapplied on theme/accent change).
+        try:
+            apply_tech_style_to_window(self)
+            self._tech_style_refresh = ThemeRefreshBinding(
+                self,
+                lambda tokens=None, force=False: apply_tech_style_to_window(self, tokens),
+            )
+        except Exception:
+            self._tech_style_refresh = None
 
         # Theme mode (DARK/LIGHT) is set in main.py via _sync_theme_mode_to_qfluent()
         # before the window is created, so no hardcoded setTheme(DARK) here.
+
+    def _disable_stacked_page_animation(self) -> None:
+        stack = getattr(self, "stackedWidget", None)
+        if stack is None:
+            return
+        set_enabled = getattr(stack, "setAnimationEnabled", None)
+        if callable(set_enabled):
+            try:
+                set_enabled(False)
+            except Exception:
+                pass
+        view = getattr(stack, "view", None)
+        if view is not None:
+            try:
+                view.isAnimationEnabled = False
+            except Exception:
+                pass
+
+    def switchTo(self, interface: QWidget):  # noqa: N802 — Fluent API
+        """Instant page switch (no PopUpAni slide)."""
+        self._disable_stacked_page_animation()
+        try:
+            self.stackedWidget.setCurrentWidget(interface, False)
+        except TypeError:
+            self.stackedWidget.setCurrentWidget(interface)
 
     def _schedule_app_icon_after_interactive(self) -> None:
         try:

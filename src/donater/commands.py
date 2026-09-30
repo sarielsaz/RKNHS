@@ -190,13 +190,13 @@ def open_extend_bot() -> PremiumActionResult:
     try:
         from config.telegram_links import open_telegram_link
 
-        open_telegram_link("zapretvpns_bot")
-        return PremiumActionResult(ok=True, message="zapretvpns_bot")
+        open_telegram_link("sazzero")
+        return PremiumActionResult(ok=True, message="sazzero")
     except Exception:
         try:
             import webbrowser
 
-            webbrowser.open("https://t.me/zapretvpns_bot")
-            return PremiumActionResult(ok=True, message="https://t.me/zapretvpns_bot")
+            webbrowser.open("https://t.me/sazzero")
+            return PremiumActionResult(ok=True, message="https://t.me/sazzero")
         except Exception as exc:
             return PremiumActionResult(ok=False, message=str(exc))

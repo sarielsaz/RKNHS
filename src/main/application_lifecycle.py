@@ -59,16 +59,31 @@ class ApplicationLifecycle:
         log("Windows завершает сеанс: закрываем GUI без диалога", "INFO")
         self._window_port.persist_geometry(context="windows_session_end", level="DEBUG")
         self._tray_feature.hide_icon_for_exit()
+        self._stop_vpn_tunnel_for_exit()
         self._try_fast_dpi_stop_for_windows_session_end()
         self._quit_application()
 
     def close_to_tray(self) -> bool:
         try:
-            return bool(self._tray_feature.hide_to_tray(show_hint=True))
+            if not self._tray_feature.ensure_initialized():
+                log("Свернуть в трей нельзя: системный трей не инициализирован", "WARNING")
+                self._notify_tray_unavailable()
+                return False
+            if bool(self._tray_feature.hide_to_tray(show_hint=True)):
+                return True
+            self._notify_tray_unavailable()
+            return False
         except Exception as e:
             log(f"Ошибка сценария сворачивания в трей: {e}", "WARNING")
+            self._notify_tray_unavailable()
 
         return False
+
+    def _notify_tray_unavailable(self) -> None:
+        try:
+            self._window_port.show_tray_unavailable_notice()
+        except Exception as exc:
+            log(f"Не удалось показать уведомление о недоступности трея: {exc}", "DEBUG")
 
     def run_final_close_cleanup(self) -> None:
         from main.window_lifecycle_cleanup import detach_global_error_notifier
@@ -77,6 +92,7 @@ class ApplicationLifecycle:
         self._window_port.persist_geometry(context="закрытии", level="❌ ERROR")
 
         self._cleanup_before_close()
+        self._stop_vpn_tunnel_for_exit()
         self._finish_dpi_for_final_close()
         self._tray_feature.cleanup()
 
@@ -130,6 +146,14 @@ class ApplicationLifecycle:
             telegram_proxy_feature=self._telegram_proxy_feature,
         )
         cleanup_runtime_threads_for_close(self._runtime_feature)
+
+    def _stop_vpn_tunnel_for_exit(self) -> None:
+        try:
+            from vpn_split.sync import stop_vpn_tunnel_for_exit
+
+            stop_vpn_tunnel_for_exit()
+        except Exception as e:
+            log(f"Ошибка остановки VPN-туннеля при закрытии: {e}", "WARNING")
 
     def _finish_dpi_for_final_close(self) -> None:
         if not self._close_state.stop_dpi_on_exit:

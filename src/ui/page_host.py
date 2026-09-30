@@ -67,25 +67,9 @@ class WindowPageHost:
         except Exception:
             return "unknown"
 
-    @staticmethod
-    def _widget_tree_counts(widget) -> tuple[int, int]:
-        if widget is None:
-            return 0, 0
-        try:
-            children = list(widget.findChildren(QWidget))
-        except Exception:
-            return 0, 0
-        visible = 0
-        for child in children:
-            try:
-                if child.isVisible():
-                    visible += 1
-            except Exception:
-                pass
-        return len(children), visible
-
     @classmethod
     def _switch_detail_extra(cls, stack, target_page) -> str:
+        # Keep this cheap — findChildren on heavy pages stalls every sidebar click.
         try:
             current_page = stack.currentWidget()
         except Exception:
@@ -94,11 +78,10 @@ class WindowPageHost:
             stack_count = int(stack.count())
         except Exception:
             stack_count = 0
-        child_count, visible_count = cls._widget_tree_counts(target_page)
         return (
             f"from={cls._widget_debug_name(current_page)}, "
             f"to={cls._widget_debug_name(target_page)}, "
-            f"children={child_count}, visible={visible_count}, stack={stack_count}"
+            f"stack={stack_count}"
         )
 
     @staticmethod
@@ -172,15 +155,22 @@ class WindowPageHost:
             except Exception:
                 pass
 
-        previous_animation_enabled = getattr(stack, "isAnimationEnabled", None)
-        animation_flag_known = isinstance(previous_animation_enabled, bool)
-        if animation_flag_known:
-            step_started_at = time.perf_counter()
+        # isAnimationEnabled is a method on Fluent StackedWidget — must call
+        # setAnimationEnabled(False); assigning the attribute does nothing useful.
+        step_started_at = time.perf_counter()
+        set_anim = getattr(stack, "setAnimationEnabled", None)
+        if callable(set_anim):
             try:
-                stack.isAnimationEnabled = False
+                set_anim(False)
             except Exception:
-                animation_flag_known = False
-            self._log_optional_switch_step(page_name, "open.switch.disable_animation", step_started_at)
+                pass
+        view = getattr(stack, "view", None)
+        if view is not None:
+            try:
+                view.isAnimationEnabled = False
+            except Exception:
+                pass
+        self._log_optional_switch_step(page_name, "open.switch.disable_animation", step_started_at)
 
         updates_were_enabled = True
         updates_toggled = False
@@ -213,13 +203,6 @@ class WindowPageHost:
         finally:
             if updates_toggled:
                 self._schedule_stack_updates_restore(stack, set_updates_enabled, page_name)
-            if animation_flag_known:
-                step_started_at = time.perf_counter()
-                try:
-                    stack.isAnimationEnabled = bool(previous_animation_enabled)
-                except Exception:
-                    pass
-                self._log_optional_switch_step(page_name, "open.switch.restore_animation", step_started_at)
 
     def _log_optional_switch_step(
         self,
@@ -371,7 +354,7 @@ class WindowPageHost:
         except Exception:
             pass
         self._log_step_timing(page_name, "open.navigation_sync", step_started_at)
-        self._request_page_keyboard_focus(page)
+        # Focus is deferred from BasePage.showEvent — avoid a second scan timer here.
         self._shown_pages.add(page_name)
         log_page_timing(
             page_name,

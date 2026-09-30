@@ -17,6 +17,13 @@ def initialize_window_appearance_bindings(window) -> None:
         peek_warmed_smooth_scroll_enabled,
     )
 
+    try:
+        from ui.tech_style import apply_tech_style_to_window
+
+        apply_tech_style_to_window(window)
+    except Exception:
+        pass
+
     on_animations_changed(window, bool(peek_warmed_animations_enabled()))
     on_smooth_scroll_changed(window, bool(peek_warmed_smooth_scroll_enabled()))
     on_editor_smooth_scroll_changed(window, bool(peek_warmed_editor_smooth_scroll_enabled()))

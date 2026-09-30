@@ -221,7 +221,7 @@ PAGE_ROUTE_SPECS: dict[PageName, PageRouteSpec] = {
         class_name="PremiumPage",
         route_key="PremiumPage",
         is_top_level=True,
-        is_hidden=False,
+        is_hidden=True,
         launch_modes=_COMMON,
         breadcrumb_parent=None,
         sidebar_group="appearance",
@@ -303,6 +303,17 @@ PAGE_ROUTE_SPECS: dict[PageName, PageRouteSpec] = {
         breadcrumb_parent=None,
         sidebar_group="system",
     ),
+    PageName.VPN_SPLIT: PageRouteSpec(
+        page_name=PageName.VPN_SPLIT,
+        module_name="vpn_split.ui.page",
+        class_name="VpnSplitPage",
+        route_key="VpnSplitPage",
+        is_top_level=True,
+        is_hidden=False,
+        launch_modes=_COMMON,
+        breadcrumb_parent=None,
+        sidebar_group="system",
+    ),
 }
 
 PAGE_CLEANUP_ORDER: tuple[PageName, ...] = (
@@ -329,6 +340,7 @@ PAGE_CLEANUP_ORDER: tuple[PageName, ...] = (
     PageName.APPEARANCE,
     PageName.PREMIUM,
     PageName.TELEGRAM_PROXY,
+    PageName.VPN_SPLIT,
 )
 
 _PAGE_CLEANUP_PRIORITY_OVERRIDES: dict[PageName, int] = {

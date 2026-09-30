@@ -99,17 +99,17 @@ def apply_winws1_pages_language(
     if auto_dpi_toggle is not None:
         auto_dpi_toggle.set_texts(
             tr_catalog("page.winws1_control.setting.autostart.title", language=language, default="Автозапуск DPI после старта программы"),
-            tr_catalog("page.winws1_control.setting.autostart.desc", language=language, default="После запуска ZapretGUI автоматически запускать текущий DPI-режим"),
+            tr_catalog("page.winws1_control.setting.autostart.desc", language=language, default="После запуска RKNHS автоматически запускать текущий DPI-режим"),
         )
     if gui_autostart_toggle is not None:
         gui_autostart_toggle.set_texts(
-            tr_catalog("page.control.setting.gui_autostart.title", language=language, default="Автозапуск ZapretGUI"),
+            tr_catalog("page.control.setting.gui_autostart.title", language=language, default="Автозапуск RKNHS"),
             tr_catalog("page.control.setting.gui_autostart.desc", language=language, default="Запускать программу в трее при входе в Windows"),
         )
     if tray_close_mode_combo is not None:
         tray_close_mode_combo.set_texts(
             tr_catalog("page.control.setting.tray_close_mode.title", language=language, default="Поведение окна и трея"),
-            tr_catalog("page.control.setting.tray_close_mode.desc", language=language, default="Выберите, когда ZapretGUI будет скрывать окно в системный трей"),
+            tr_catalog("page.control.setting.tray_close_mode.desc", language=language, default="Выберите, когда RKNHS будет скрывать окно в системный трей"),
         )
     if defender_toggle is not None:
         defender_toggle.set_texts(
@@ -159,16 +159,17 @@ def apply_winws1_pages_language(
         description=folder_desc,
     )
 
-    docs_title = tr_catalog("page.winws1_control.button.documentation", language=language, default="Документация")
-    docs_desc = tr_catalog("page.winws1_control.button.documentation.desc", language=language, default="Открыть справку и описание возможностей")
-    docs_card.setTitle(docs_title)
-    docs_card.setContent(docs_desc)
-    set_button_text_accessibility(
-        docs_card.button,
-        tr_catalog("page.winws1_control.button.open", language=language, default="Открыть"),
-        accessible_name=tr_catalog("page.winws1_control.button.documentation.accessible_name", language=language, default="Открыть документацию"),
-        description=docs_desc,
-    )
+    if docs_card is not None:
+        docs_title = tr_catalog("page.winws1_control.button.documentation", language=language, default="Документация")
+        docs_desc = tr_catalog("page.winws1_control.button.documentation.desc", language=language, default="Открыть справку и описание возможностей")
+        docs_card.setTitle(docs_title)
+        docs_card.setContent(docs_desc)
+        set_button_text_accessibility(
+            docs_card.button,
+            tr_catalog("page.winws1_control.button.open", language=language, default="Открыть"),
+            accessible_name=tr_catalog("page.winws1_control.button.documentation.accessible_name", language=language, default="Открыть документацию"),
+            description=docs_desc,
+        )
 
     additional_settings_card.titleLabel.setText(
         tr_catalog("page.winws1_control.card.advanced", language=language, default="Дополнительные настройки")

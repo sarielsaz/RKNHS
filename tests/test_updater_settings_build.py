@@ -205,10 +205,10 @@ class UpdaterSettingsBuildTests(unittest.TestCase):
             on_auto_check_toggled=lambda _value: None,
         )
 
-        self.assertEqual(widgets.version_info_label.accessibleName(), "Версия ZapretGUI: v21.0.0.142 · dev")
+        self.assertEqual(widgets.version_info_label.accessibleName(), "Версия RKNHS: v21.0.0.142 · dev")
         self.assertEqual(
             widgets.version_info_label.property("screenReaderStateText"),
-            "Версия ZapretGUI: v21.0.0.142 · dev",
+            "Версия RKNHS: v21.0.0.142 · dev",
         )
 
     def test_auto_check_toggle_exposes_screen_reader_state(self) -> None:

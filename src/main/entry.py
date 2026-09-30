@@ -217,6 +217,17 @@ def main() -> None:
         "StartupApplicationBootstrap",
         f"{(_time.perf_counter() - t_app) * 1000:.0f}ms",
     )
+
+    # t_license_gate = _time.perf_counter()
+    # from licensing.startup_gate import ensure_license_before_main_window
+    #
+    # if not ensure_license_before_main_window(app):
+    #     sys.exit(0)
+    # emit_startup_metric(
+    #     "StartupLicenseGate",
+    #     f"{(_time.perf_counter() - t_license_gate) * 1000:.0f}ms",
+    # )
+
     if is_qt_event_diagnostic_enabled():
         try:
             from main.qt_event_diagnostics import install_qt_event_diagnostic

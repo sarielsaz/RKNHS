@@ -180,7 +180,7 @@ def application_bootstrap() -> QApplication:
             f"{(_time.perf_counter() - t_crash) * 1000:.0f}ms",
         )
     except Exception as exc:
-        ctypes.windll.user32.MessageBoxW(None, f"Ошибка инициализации Qt: {exc}", "Zapret", 0x10)
+        ctypes.windll.user32.MessageBoxW(None, f"Ошибка инициализации Qt: {exc}", "RKNHS", 0x10)
 
     t_theme = _time.perf_counter()
     from qfluentwidgets import Theme, setTheme
@@ -208,12 +208,21 @@ def application_bootstrap() -> QApplication:
     t_accent = _time.perf_counter()
     try:
         from settings.appearance import load_accent_color
+        from ui.theme import DEFAULT_ACCENT_HEX
 
-        accent_hex = load_accent_color().hex_color
-        if accent_hex:
-            color = QColor(accent_hex)
-            if color.isValid():
-                qconfig.set(qconfig.themeColor, color)
+        accent_hex = load_accent_color().hex_color or DEFAULT_ACCENT_HEX
+        color = QColor(accent_hex)
+        if color.isValid():
+            qconfig.set(qconfig.themeColor, color)
+    except Exception:
+        try:
+            qconfig.set(qconfig.themeColor, QColor("#5CD6FF"))
+        except Exception:
+            pass
+    try:
+        from ui.tech_fluent_patches import install_tech_fluent_patches
+
+        install_tech_fluent_patches()
     except Exception:
         pass
     emit_startup_metric(

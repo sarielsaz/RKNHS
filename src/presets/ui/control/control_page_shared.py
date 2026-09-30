@@ -31,7 +31,7 @@ class ControlPageActionMixin:
     def _start_dpi(self) -> None:
         if self._request_runtime_conflicting_checks_stop():
             self._queue_runtime_start_retry(
-                "Останавливаем подбор стратегии перед запуском Zapret...",
+                "Останавливаем подбор стратегии перед запуском RKNHS...",
                 reason="conflict_stop",
             )
             return
@@ -103,7 +103,7 @@ class ControlPageActionMixin:
                     set_loading(False, "")
                 set_status = getattr(self, "_set_status", None)
                 if callable(set_status):
-                    set_status("Подбор стратегии ещё останавливается. Дождитесь остановки и запустите Zapret снова.")
+                    set_status("Подбор стратегии ещё останавливается. Дождитесь остановки и запустите RKNHS снова.")
                 return
             QTimer.singleShot(RUNTIME_START_RETRY_MS, self._retry_start_dpi_after_runtime_ready)
             return

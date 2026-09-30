@@ -24,6 +24,17 @@ class ThemeSubscriptionManager:
         source: str = "api",
     ) -> None:
         """Добавляет или скрывает отдельную Premium-метку в верхней панели."""
+        try:
+            from app.branding import HIDE_DONATE_NAV
+
+            if HIDE_DONATE_NAV:
+                badge = getattr(self, "_subscription_title_badge", None)
+                if badge is not None and badge.isVisible():
+                    badge.hide()
+                return
+        except Exception:
+            pass
+
         if not is_premium:
             badge = getattr(self, "_subscription_title_badge", None)
             if badge is None:

@@ -20,7 +20,7 @@ from ui.pages.about_page_about_build import (
 )
 from ui.pages.about_page_help_build import build_about_page_help_content
 from ui.pages.about_page_kvn_build import build_about_page_kvn_content
-from ui.pages.about_page_support_build import build_about_page_support_content
+from ui.pages.about_page_license_build import copy_text_to_clipboard
 from ui.pages.about_page_tabs_build import build_about_page_tabs
 from app.state_store import AppUiState, MainWindowStateStore
 from app.ui_texts import tr as tr_catalog
@@ -76,6 +76,9 @@ class AboutPage(BasePage):
         self._support_discussions_card = None
         self._support_telegram_card = None
         self._support_discord_card = None
+        self._license_status_label = None
+        self._license_key_edit = None
+        self._license_deactivate_btn = None
 
         # Tab lazy init flags
         self._help_tab_initialized = False
@@ -197,7 +200,12 @@ class AboutPage(BasePage):
         try:
             self.tabs_pivot.setItemText("about", " " + tr_catalog("page.about.tab.about", language=language, default="О ПРОГРАММЕ"))
             self.tabs_pivot.setItemText("help", " " + tr_catalog("page.about.tab.help", language=language, default="СПРАВКА"))
-            self.tabs_pivot.setItemText("kvn", " ZAPRET KVN")
+            try:
+                from app.branding import FORK_AUTHOR
+
+                self.tabs_pivot.setItemText("kvn", f" {FORK_AUTHOR.upper()}")
+            except Exception:
+                self.tabs_pivot.setItemText("kvn", " SAZZERO")
         except Exception:
             pass
 
@@ -235,7 +243,7 @@ class AboutPage(BasePage):
             self.about_section_version_label.setText(
                 tr_catalog("page.about.section.version", language=self._ui_language, default="Версия")
             )
-            about_app_name = tr_catalog("page.about.app_name", language=self._ui_language, default="Zapret 2 GUI")
+            about_app_name = tr_catalog("page.about.app_name", language=self._ui_language, default="RKNHS")
             self.about_app_name_label.setText(about_app_name)
             self.about_version_value_label.setText(
                 tr_catalog(
@@ -258,24 +266,29 @@ class AboutPage(BasePage):
                 update_btn=self.update_btn,
             )
 
-            self.about_section_subscription_label.setText(
-                tr_catalog("page.about.section.subscription", language=self._ui_language, default="Подписка")
-            )
-            self.sub_desc_label.setText(
-                tr_catalog(
-                    "page.about.subscription.desc",
-                    language=self._ui_language,
-                    default="Подписка Zapret Premium открывает доступ к дополнительным темам, приоритетной поддержке и VPN-сервису.",
+            if (
+                self.about_section_subscription_label is not None
+                and self.sub_desc_label is not None
+                and self.premium_btn is not None
+            ):
+                self.about_section_subscription_label.setText(
+                    tr_catalog("page.about.section.subscription", language=self._ui_language, default="Подписка")
                 )
-            )
-            set_subscription_description_accessibility(self.sub_desc_label, self.sub_desc_label.text())
-            self.premium_btn.setText(
-                tr_catalog("page.about.button.premium_vpn", language=self._ui_language, default="Premium и VPN")
-            )
-            apply_about_buttons_accessibility(
-                tr_fn=lambda key, default: tr_catalog(key, language=self._ui_language, default=default),
-                premium_btn=self.premium_btn,
-            )
+                self.sub_desc_label.setText(
+                    tr_catalog(
+                        "page.about.subscription.desc",
+                        language=self._ui_language,
+                        default="Подписка RKNHS Premium открывает доступ к дополнительным темам и приоритетной поддержке.",
+                    )
+                )
+                set_subscription_description_accessibility(self.sub_desc_label, self.sub_desc_label.text())
+                self.premium_btn.setText(
+                    tr_catalog("page.about.button.premium_vpn", language=self._ui_language, default="Premium")
+                )
+                apply_about_buttons_accessibility(
+                    tr_fn=lambda key, default: tr_catalog(key, language=self._ui_language, default=default),
+                    premium_btn=self.premium_btn,
+                )
         except Exception:
             pass
 
@@ -302,7 +315,9 @@ class AboutPage(BasePage):
 
     def _build_about_content(self, layout: QVBoxLayout):
         from config.build_info import APP_VERSION
+        from licensing.service import get_current_license_status, get_local_machine_id
 
+        license_status = get_current_license_status()
         tokens = get_theme_tokens()
         widgets = build_about_page_about_content(
             layout,
@@ -313,6 +328,12 @@ class AboutPage(BasePage):
             make_section_label=lambda text: _make_section_label(text),
             on_open_updates=self._open_updates_callback,
             on_open_premium=self._open_premium_callback,
+            on_activate_license=self._activate_license,
+            on_deactivate_license=self._deactivate_license,
+            on_copy_machine_id=self._copy_machine_id,
+            license_machine_id=get_local_machine_id(),
+            license_status_text=self._format_license_status_text(license_status),
+            license_status_valid=license_status.valid,
         )
         self.about_section_version_label = widgets.about_section_version_label
         self.about_app_name_label = widgets.about_app_name_label
@@ -323,11 +344,119 @@ class AboutPage(BasePage):
         self.sub_status_label = widgets.sub_status_label
         self.sub_desc_label = widgets.sub_desc_label
         self.premium_btn = widgets.premium_btn
+        self._license_status_label = widgets.license_status_label
+        self._license_key_edit = widgets.license_key_edit
+        self._license_deactivate_btn = widgets.license_deactivate_btn
         layout.addSpacing(16)
-        self._build_support_content(layout)
+        try:
+            from app.branding import HIDE_EXTERNAL_LINKS
+
+            if not HIDE_EXTERNAL_LINKS:
+                self._build_support_content(layout)
+        except Exception:
+            self._build_support_content(layout)
+
+    def _format_license_status_text(self, status) -> str:
+        if status.valid:
+            name = status.name or tr_catalog("page.about.license.unnamed", language=self._ui_language, default="лицензия")
+            expiry = status.expiry_label
+            return tr_catalog(
+                "page.about.license.status.active",
+                language=self._ui_language,
+                default="Активна: {name}, срок: {expiry}",
+            ).format(name=name, expiry=expiry)
+        return status.message or tr_catalog(
+            "page.about.license.status.inactive",
+            language=self._ui_language,
+            default="Лицензия не активирована.",
+        )
+
+    def _refresh_license_status_ui(self) -> None:
+        if self._license_status_label is None:
+            return
+        from licensing.service import get_current_license_status
+
+        status = get_current_license_status()
+        self._license_status_label.setText(self._format_license_status_text(status))
+        if status.valid:
+            self._license_status_label.setStyleSheet("color: #2e7d32;")
+        else:
+            self._license_status_label.setStyleSheet("color: #c0392b;")
+        if self._license_deactivate_btn is not None:
+            self._license_deactivate_btn.setEnabled(status.valid)
+
+    def _copy_machine_id(self) -> None:
+        from licensing.service import get_local_machine_id
+
+        copy_text_to_clipboard(get_local_machine_id())
+        InfoBar.success(
+            title=tr_catalog("page.about.license.copy_fingerprint", language=self._ui_language, default="Копировать"),
+            content=tr_catalog(
+                "page.about.license.copy_fingerprint_done",
+                language=self._ui_language,
+                default="Отпечаток устройства скопирован.",
+            ),
+            parent=self,
+            duration=2500,
+        )
+
+    def _activate_license(self) -> None:
+        from licensing.service import activate_license_key
+
+        key = ""
+        if self._license_key_edit is not None:
+            key = str(self._license_key_edit.text() or "").strip()
+        if not key:
+            InfoBar.warning(
+                title=tr_catalog("page.about.license.activate", language=self._ui_language, default="Активировать"),
+                content=tr_catalog(
+                    "page.about.license.key_missing",
+                    language=self._ui_language,
+                    default="Вставьте лицензионный ключ.",
+                ),
+                parent=self,
+                duration=3500,
+            )
+            return
+        status = activate_license_key(key)
+        self._refresh_license_status_ui()
+        if status.valid:
+            InfoBar.success(
+                title=tr_catalog("page.about.license.activate", language=self._ui_language, default="Активировать"),
+                content=status.message,
+                parent=self,
+                duration=3500,
+            )
+        else:
+            InfoBar.error(
+                title=tr_catalog("page.about.license.activate", language=self._ui_language, default="Активировать"),
+                content=status.message,
+                parent=self,
+                duration=5000,
+            )
+
+    def _deactivate_license(self) -> None:
+        from licensing.service import deactivate_license
+
+        deactivate_license()
+        if self._license_key_edit is not None:
+            self._license_key_edit.clear()
+        self._refresh_license_status_ui()
+        InfoBar.info(
+            title=tr_catalog("page.about.license.deactivate", language=self._ui_language, default="Сбросить"),
+            content=tr_catalog(
+                "page.about.license.deactivated",
+                language=self._ui_language,
+                default="Лицензия удалена с этого компьютера.",
+            ),
+            parent=self,
+            duration=3000,
+        )
 
     def update_subscription_status(self, is_premium: bool, days: int | None = None):
         """Обновляет отображение статуса подписки"""
+        if self.sub_status_icon is None or self.sub_status_label is None:
+            return
         tokens = get_theme_tokens()
         plan = about_page_plans.build_subscription_status_plan(
             is_premium=is_premium,

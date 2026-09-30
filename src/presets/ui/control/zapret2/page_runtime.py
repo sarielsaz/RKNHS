@@ -54,7 +54,7 @@ def build_status_plan(*, state: str | bool, last_error: str, language: str) -> C
     if phase == "running":
         return ControlStatusPlan(
             phase=phase,
-            title=tr_catalog("page.winws2_control.status.running", language=language, default="Zapret работает"),
+            title=tr_catalog("page.winws2_control.status.running", language=language, default="RKNHS работает"),
             description=tr_catalog("page.winws2_control.status.bypass_active", language=language, default="Обход блокировок активен"),
             dot_color="#6ccb5f",
             pulsing=True,
@@ -65,7 +65,7 @@ def build_status_plan(*, state: str | bool, last_error: str, language: str) -> C
     if phase == "autostart_pending":
         return ControlStatusPlan(
             phase=phase,
-            title="Автозапуск Zapret запланирован",
+            title="Автозапуск RKNHS запланирован",
             description="Подготавливаем стартовый запуск выбранного пресета",
             dot_color="#f5a623",
             pulsing=True,
@@ -76,7 +76,7 @@ def build_status_plan(*, state: str | bool, last_error: str, language: str) -> C
     if phase == "starting":
         return ControlStatusPlan(
             phase=phase,
-            title="Zapret запускается",
+            title="RKNHS запускается",
             description="Ждём подтверждение процесса winws",
             dot_color="#f5a623",
             pulsing=True,
@@ -87,7 +87,7 @@ def build_status_plan(*, state: str | bool, last_error: str, language: str) -> C
     if phase == "stopping":
         return ControlStatusPlan(
             phase=phase,
-            title="Zapret останавливается",
+            title="RKNHS останавливается",
             description="Завершаем процесс и освобождаем WinDivert",
             dot_color="#f5a623",
             pulsing=True,
@@ -98,7 +98,7 @@ def build_status_plan(*, state: str | bool, last_error: str, language: str) -> C
     if phase == "failed":
         return ControlStatusPlan(
             phase=phase,
-            title="Ошибка запуска Zapret",
+            title="Ошибка запуска RKNHS",
             description=control_runtime.short_dpi_error(last_error) or "Процесс не подтвердился или завершился сразу",
             dot_color="#ff6b6b",
             pulsing=False,
@@ -108,7 +108,7 @@ def build_status_plan(*, state: str | bool, last_error: str, language: str) -> C
         )
     return ControlStatusPlan(
         phase="stopped",
-        title=tr_catalog("page.winws2_control.status.stopped", language=language, default="Zapret остановлен"),
+        title=tr_catalog("page.winws2_control.status.stopped", language=language, default="RKNHS остановлен"),
         description=tr_catalog("page.winws2_control.status.press_start", language=language, default="Нажмите «Запустить» для активации"),
         dot_color="#ff6b6b",
         pulsing=False,

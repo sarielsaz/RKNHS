@@ -47,6 +47,9 @@ class PageName(Enum):
     # === Telegram Proxy ===
     TELEGRAM_PROXY = auto()          # Telegram WebSocket Proxy
 
+    # === VPN Split (AmneziaWG) ===
+    VPN_SPLIT = auto()               # Домены через VPN, не через DPI
+
     # === Оркестратор (автообучение) ===
     ORCHESTRA = auto()               # Оркестр - главная
     ORCHESTRA_SETTINGS = auto()      # Настройки оркестратора (вкладки: залоченные, заблокированные, белый список, рейтинги)

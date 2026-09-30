@@ -20,7 +20,7 @@ def _set_workdir_to_app() -> None:
 
         if is_startup_debug_enabled():
             debug_info = f"""
-=== ZAPRET STARTUP DEBUG ===
+=== RKNHS STARTUP DEBUG ===
 Compiled mode: {'__compiled__' in globals()}
 Frozen mode: {getattr(sys, 'frozen', False)}
 sys.executable: {sys.executable}
@@ -50,12 +50,12 @@ def _require_frozen() -> None:
 
         ctypes.windll.user32.MessageBoxW(
             0,
-            "Запустите программу через Zapret.exe\n\nЗапуск напрямую из исходников не поддерживается.",
-            "Zapret — Ошибка запуска",
+            "Запустите программу через RKNHS.exe\n\nЗапуск напрямую из исходников не поддерживается.",
+            "RKNHS — Ошибка запуска",
             0x10,
         )
     except Exception:
-        print("ERROR: Запуск из исходников не поддерживается. Используйте Zapret.exe")
+        print("ERROR: Запуск из исходников не поддерживается. Используйте RKNHS.exe")
     sys.exit(1)
 
 

@@ -94,7 +94,7 @@ def apply_servers_page_language(
             channel=CHANNEL,
         )
     )
-    set_state_text(version_info_label, f"Версия ZapretGUI: {_label_text(version_info_label)}")
+    set_state_text(version_info_label, f"Версия RKNHS: {_label_text(version_info_label)}")
 
     telegram_title = tr_fn("page.servers.telegram.title", "Проблемы с обновлением?")
     telegram_info = tr_fn(

@@ -111,9 +111,9 @@ def check_mitmproxy() -> tuple[bool, str]:
 
             err = (
                 f"Обнаружен запущенный процесс mitmproxy: {process_name} (PID: {pid})\n\n"
-                "mitmproxy использует тот же драйвер WinDivert, что и Zapret.\n"
+                "mitmproxy использует тот же драйвер WinDivert, что и RKNHS.\n"
                 "Одновременная работа этих программ невозможна.\n\n"
-                "Пожалуйста, завершите все процессы mitmproxy и перезапустите Zapret."
+                "Пожалуйста, завершите все процессы mitmproxy и перезапустите RKNHS."
             )
             try:
                 from log.log import log
@@ -594,7 +594,7 @@ def check_proxy_warning() -> tuple[bool, str]:
     log(f"Обнаружен включенный ручной прокси-сервер{proxy_info}", level="WARNING")
     return True, (
         f"Обнаружен включенный ручной прокси-сервер{proxy_info}.\n\n"
-        "Он может мешать работе Zapret.\n"
+        "Он может мешать работе RKNHS.\n"
         "Приложение может предложить отключить его, но по умолчанию настройки прокси "
         "изменяться не будут."
     )
@@ -678,7 +678,7 @@ def check_goodbyedpi() -> tuple[bool, str]:
         err = (
             f"Обнаружены службы GoodbyeDPI: {', '.join(still_exists)}\n\n"
             "Автоматическое удаление не удалось.\n"
-            "Zapret 2 GUI несовместим с GoodbyeDPI.\n\n"
+            "RKNHS несовместим с GoodbyeDPI.\n\n"
             "Удалите службы вручную командами (от администратора):\n"
         )
         for svc in still_exists:

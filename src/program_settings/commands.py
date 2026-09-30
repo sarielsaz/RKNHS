@@ -52,7 +52,7 @@ def set_auto_dpi_enabled(
         pass
 
     message = (
-        "DPI будет запускаться автоматически после старта ZapretGUI"
+        "DPI будет запускаться автоматически после старта RKNHS"
         if enabled
         else "Автозапуск DPI после старта программы отключён"
     )
@@ -78,7 +78,7 @@ def set_gui_autostart_enabled(
                 return ProgramSettingActionResult(
                     level="success",
                     title="Автозапуск включён",
-                    content="ZapretGUI будет запускаться в трее при входе в Windows.",
+                    content="RKNHS будет запускаться в трее при входе в Windows.",
                     revert_checked=None,
                     final_status="Готово",
                 )
@@ -97,7 +97,7 @@ def set_gui_autostart_enabled(
             return ProgramSettingActionResult(
                 level="success",
                 title="Автозапуск отключён",
-                content="ZapretGUI больше не будет запускаться вместе с Windows.",
+                content="RKNHS больше не будет запускаться вместе с Windows.",
                 revert_checked=None,
                 final_status="Готово",
             )

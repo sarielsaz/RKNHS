@@ -73,3 +73,8 @@ www_youtube_com.txt
 /.agent
 /ico
 /src/ico
+
+# Local build noise
+build_log.txt
+*.local.spec.bak
+

@@ -7,7 +7,12 @@ from pathlib import Path
 from log.log import log
 
 
-STARTUP_SHORTCUT_NAME = "ZapretGUI.lnk"
+STARTUP_SHORTCUT_NAME = "RKNHS.lnk"
+LEGACY_STARTUP_SHORTCUT_NAMES = (
+    "ZapretGUI.lnk",
+    "Zapret.lnk",
+    "Zapret 2 GUI.lnk",
+)
 STARTUP_RELATIVE_PATH = (
     "Microsoft",
     "Windows",
@@ -39,11 +44,14 @@ def create_or_update_startup_shortcut(
     *,
     shortcut_path: str | os.PathLike[str] | None = None,
 ) -> bool:
-    """Создаёт ярлык ZapretGUI в автозагрузке текущего пользователя."""
+    """Создаёт ярлык RKNHS в автозагрузке текущего пользователя."""
     exe_path = str(exe_path or "").strip()
     if not exe_path:
         log("Startup shortcut create failed: empty exe path", "ERROR")
         return False
+
+    # Drop legacy upstream shortcut names so autostart is not duplicated.
+    delete_legacy_startup_shortcuts()
 
     path = Path(shortcut_path) if shortcut_path is not None else get_startup_shortcut_path()
     try:
@@ -60,16 +68,33 @@ def create_or_update_startup_shortcut(
         return False
 
 
+def delete_legacy_startup_shortcuts() -> int:
+    removed = 0
+    startup_dir = get_user_startup_dir()
+    for name in LEGACY_STARTUP_SHORTCUT_NAMES:
+        path = startup_dir / name
+        try:
+            if path.exists():
+                path.unlink()
+                removed += 1
+        except Exception as exc:
+            log(f"Legacy startup shortcut delete failed ({name}): {exc}", "WARNING")
+    return removed
+
+
 def delete_startup_shortcut(
     *,
     shortcut_path: str | os.PathLike[str] | None = None,
 ) -> bool:
+    removed = False
     path = Path(shortcut_path) if shortcut_path is not None else get_startup_shortcut_path()
     try:
-        if not path.exists():
-            return False
-        path.unlink()
-        return True
+        if path.exists():
+            path.unlink()
+            removed = True
     except Exception as exc:
         log(f"Startup shortcut delete failed: {exc}", "WARNING")
         return False
+    if delete_legacy_startup_shortcuts():
+        removed = True
+    return removed

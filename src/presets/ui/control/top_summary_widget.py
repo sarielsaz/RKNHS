@@ -1,13 +1,18 @@
+﻿"""Control page top summary — HUD strip of bordered cells (DESIGN.md)."""
+
 from __future__ import annotations
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtWidgets import QLabel, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
+from PyQt6.QtGui import QPainter
+from PyQt6.QtWidgets import QFrame, QLabel, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 
-from qfluentwidgets import CaptionLabel, FlowLayout, StrongBodyLabel, SubtitleLabel
+from qfluentwidgets import CaptionLabel, StrongBodyLabel, SubtitleLabel
 
 from app.ui_texts import tr as tr_catalog
 from presets.ui.control.top_summary_plan import build_premium_summary, build_profiles_value
 from ui.accessibility import set_control_accessibility, set_state_text
+from ui.tech_fluent_patches import draw_corner_brackets
+from ui.tech_type import format_hud_label
 
 
 def set_visible_if_changed(widget, visible: bool) -> bool:
@@ -36,7 +41,11 @@ def set_text_if_changed(widget, text: str) -> bool:
     return True
 
 
-class ControlTopSummaryItem(QWidget):
+def _hud_caption(text: str) -> str:
+    return format_hud_label(text)
+
+
+class ControlTopSummaryItem(QFrame):
     clicked = pyqtSignal()
 
     def __init__(
@@ -49,12 +58,13 @@ class ControlTopSummaryItem(QWidget):
         parent=None,
     ):
         super().__init__(parent)
+        self.setObjectName("hudCell")
         self._icon_name = str(icon_name or "fa5s.circle")
         self._clickable = bool(clickable)
         self._last_texts: tuple[str, str, str] | None = None
         self._last_icon_theme_key: tuple[str, str] | None = None
         self._icon_label = QLabel(self)
-        self._icon_label.setFixedSize(24, 24)
+        self._icon_label.setFixedSize(22, 22)
         self._caption_label = CaptionLabel(self)
         self._value_label = SubtitleLabel(self) if prominent else StrongBodyLabel(self)
         self._details_label = CaptionLabel(self)
@@ -66,7 +76,7 @@ class ControlTopSummaryItem(QWidget):
             self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(12, 10, 12, 10)
         layout.setSpacing(10)
         layout.addWidget(self._icon_label, 0, Qt.AlignmentFlag.AlignVCenter)
 
@@ -78,7 +88,8 @@ class ControlTopSummaryItem(QWidget):
         text_layout.addWidget(self._details_label)
         layout.addLayout(text_layout, 1)
 
-        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setMinimumHeight(64)
         self._theme_refresh = None
         delay_ms = max(0, int(initial_icon_delay_ms or 0))
         self._schedule_icon_refresh(delay_ms)
@@ -95,7 +106,7 @@ class ControlTopSummaryItem(QWidget):
             return
         self._last_texts = next_texts
         caption_text, value_text, details_text = next_texts
-        set_text_if_changed(self._caption_label, caption_text)
+        set_text_if_changed(self._caption_label, _hud_caption(caption_text))
         set_visible_if_changed(self._caption_label, bool(caption_text.strip()))
         set_text_if_changed(self._value_label, value_text)
         set_text_if_changed(self._details_label, details_text)
@@ -139,13 +150,41 @@ class ControlTopSummaryItem(QWidget):
             return
         self.__dict__["_last_icon_theme_key"] = icon_key
         self._icon_label.setPixmap(
-            get_cached_qta_pixmap(self._icon_name, color=accent_hex, size=22)
+            get_cached_qta_pixmap(self._icon_name, color=accent_hex, size=20)
         )
 
     def _apply_theme_refresh(self, tokens=None, force: bool = False) -> None:
         if force:
             self._last_icon_theme_key = None
         self._refresh_icon(tokens)
+        self._apply_hud_text_styles(tokens)
+
+    def _apply_hud_text_styles(self, tokens=None) -> None:
+        try:
+            from ui.tech_style import build_hud_caption_qss, build_hud_cell_qss
+            from ui.theme import get_theme_tokens
+
+            theme_tokens = tokens or get_theme_tokens()
+            self.setStyleSheet(build_hud_cell_qss(theme_tokens))
+            self._caption_label.setStyleSheet(build_hud_caption_qss(theme_tokens))
+            self._value_label.setStyleSheet(
+                f"color: {theme_tokens.fg}; font-family: {theme_tokens.font_mono_qss}; "
+                "font-size: 14px; font-weight: 600; background: transparent;"
+            )
+            self._details_label.setStyleSheet(
+                f"color: {theme_tokens.fg_muted}; font-family: {theme_tokens.font_mono_qss}; "
+                "font-size: 11px; background: transparent;"
+            )
+        except Exception:
+            pass
+
+    def paintEvent(self, event):  # noqa: N802
+        super().paintEvent(event)
+        try:
+            painter = QPainter(self)
+            draw_corner_brackets(painter, self.rect(), length=6)
+        except Exception:
+            pass
 
     def _activate_theme_refresh(self) -> None:
         if self._theme_refresh is None:
@@ -153,18 +192,21 @@ class ControlTopSummaryItem(QWidget):
 
             self._theme_refresh = ThemeRefreshBinding(self, self._apply_theme_refresh)
         self._refresh_icon()
+        self._apply_hud_text_styles()
 
 
-class ControlTopSummaryWidget(QWidget):
+class ControlTopSummaryWidget(QFrame):
     presetClicked = pyqtSignal()
     profilesClicked = pyqtSignal()
     premiumClicked = pyqtSignal()
 
     def __init__(self, *, language: str, mode_value: str, initial_icon_delay_ms: int = 0, parent=None):
         super().__init__(parent)
+        self.setObjectName("hudStrip")
         self._language = str(language or "ru")
         self._mode_value = str(mode_value or "")
         self._preset_value = ""
+        self._preset_details = ""
         self._profile_count: int | None = None
         self._profiles_visible = True
         self._is_premium = False
@@ -199,20 +241,45 @@ class ControlTopSummaryWidget(QWidget):
         self.profiles_item.clicked.connect(self.profilesClicked.emit)
         self.premium_item.clicked.connect(self.premiumClicked.emit)
 
-        layout = FlowLayout(self, needAni=False, isTight=True)
-        layout.setContentsMargins(0, 2, 0, 0)
-        layout.setHorizontalSpacing(36)
-        layout.setVerticalSpacing(14)
-        layout.addWidget(self.preset_item)
-        layout.addWidget(self.profiles_item)
-        layout.addWidget(self.mode_item)
-        layout.addWidget(self.premium_item)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(12)
+        layout.addWidget(self.preset_item, 2)
+        layout.addWidget(self.profiles_item, 1)
+        layout.addWidget(self.mode_item, 1)
+        try:
+            from app.branding import HIDE_DONATE_NAV
 
-        self.preset_item.setMinimumWidth(260)
-        for item in (self.profiles_item, self.mode_item, self.premium_item):
-            item.setMinimumWidth(120)
+            self._donate_nav_hidden = bool(HIDE_DONATE_NAV)
+        except Exception:
+            self._donate_nav_hidden = False
+        if not self._donate_nav_hidden:
+            layout.addWidget(self.premium_item, 1)
+        else:
+            self.premium_item.hide()
+
+        self._theme_refresh = None
+        self._apply_strip_style()
+        try:
+            from ui.theme_refresh import ThemeRefreshBinding
+
+            self._theme_refresh = ThemeRefreshBinding(
+                self,
+                lambda tokens=None, force=False: self._apply_strip_style(tokens),
+            )
+        except Exception:
+            pass
 
         self.retranslate()
+
+    def _apply_strip_style(self, tokens=None) -> None:
+        try:
+            from ui.tech_style import build_hud_strip_qss
+            from ui.theme import get_theme_tokens
+
+            self.setStyleSheet(build_hud_strip_qss(tokens or get_theme_tokens()))
+        except Exception:
+            pass
 
     def set_language(self, language: str) -> None:
         next_language = str(language or "ru")
@@ -221,11 +288,13 @@ class ControlTopSummaryWidget(QWidget):
         self._language = next_language
         self.retranslate()
 
-    def set_preset(self, value: str) -> None:
+    def set_preset(self, value: str, *, details: str = "") -> None:
         next_value = str(value or "")
-        if self._preset_value == next_value:
+        next_details = str(details or "")
+        if self._preset_value == next_value and self._preset_details == next_details:
             return
         self._preset_value = next_value
+        self._preset_details = next_details
         self.retranslate()
 
     def set_profile_count(self, enabled_count: int | None) -> None:
@@ -252,9 +321,10 @@ class ControlTopSummaryWidget(QWidget):
     def retranslate(self) -> None:
         language = self._language
         self.preset_item.set_texts(
-            caption=tr_catalog("page.control.summary.preset.caption", language=language, default="Текущий preset"),
+            caption=tr_catalog("page.control.summary.preset.caption", language=language, default="Текущий пресет"),
             value=self._preset_value
             or tr_catalog("page.winws2_control.preset.not_selected", language=language, default="Не выбран"),
+            details=self._preset_details,
         )
         self.profiles_item.set_texts(
             caption=tr_catalog("page.control.summary.profiles.caption", language=language, default="Профили"),

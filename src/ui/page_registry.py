@@ -70,6 +70,7 @@ PAGE_PERFORMANCE_PROFILE_OVERRIDES: dict[PageName, PagePerformanceProfile] = {
             PageName.SERVERS,
             PageName.ORCHESTRA,
             PageName.TELEGRAM_PROXY,
+            PageName.VPN_SPLIT,
         ),
         _profile(160),
     ),

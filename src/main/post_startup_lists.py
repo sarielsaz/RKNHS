@@ -6,7 +6,7 @@ from main.post_startup_list_workers import run_startup_lists_check
 from main.post_startup_threading import enqueue_subsystem_task, schedule_after
 
 
-LISTS_STARTUP_CHECK_DELAY_MS = 7_500
+LISTS_STARTUP_CHECK_DELAY_MS = 12_000
 
 
 def install_lists_check(

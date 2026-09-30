@@ -49,13 +49,14 @@ jobs:
       - name: Build EXE
         run: |
           cd src
-          python -m PyInstaller --noconfirm --name Zapret --console --uac-admin --onedir --paths . main.py
+          if (Test-Path ..\ico\RKNHS.ico) { Write-Host "Using RKNHS.ico" }
+          python -m PyInstaller --noconfirm --name RKNHS --windowed --uac-admin --onedir --icon ..\ico\RKNHS.ico --add-data "..\ico;ico" --paths . main.py
           echo "Build complete"
-          dir dist\Zapret\Zapret.exe
+          dir dist\RKNHS\RKNHS.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Zapret-${{ github.sha }}
-          path: src/dist/Zapret/
+          path: src/dist/RKNHS/
           retention-days: 30

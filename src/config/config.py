@@ -1,14 +1,11 @@
-# https://github.com/MagilaWEB/unblock-youtube-discord
-# https://github.com/ankddev/zapret-discord-youtube
-
-#config/config.py
+# config/config.py
 import os, sys
 
 # ═══════════════════════════════════════════════════════════════════
 # ОСНОВНАЯ ПАПКА ПРОГРАММЫ
 # ═══════════════════════════════════════════════════════════════════
 # В exe-сборке папка программы определяется по exe-файлу.
-# В source-режиме это корень репозитория public_zapretgui.
+# В source-режиме это корень репозитория RKNHS (desktop).
 if getattr(sys, "frozen", False):
     MAIN_DIRECTORY = os.path.dirname(sys.executable)
 else:
@@ -39,28 +36,29 @@ def get_install_dir_name() -> str:
 
 def get_default_install_dir() -> str:
     """Возвращает базовый путь установки по каналу."""
-    return os.path.join(get_system_drive(), "Zapret", get_install_dir_name())
+    return os.path.join(get_system_drive(), "RKNHS", get_install_dir_name())
 
 
 # Все папки относительно MAIN_DIRECTORY
 BIN_FOLDER = os.path.join(MAIN_DIRECTORY, "bin")
 INDEXJSON_FOLDER = os.path.join(MAIN_DIRECTORY, "json")
 EXE_FOLDER = os.path.join(MAIN_DIRECTORY, "exe")
-LUA_FOLDER = os.path.join(MAIN_DIRECTORY, "lua")  # Lua библиотеки для Zapret 2
+LUA_FOLDER = os.path.join(MAIN_DIRECTORY, "lua")  # Lua библиотеки для RKNHS
 ICO_FOLDER = os.path.join(MAIN_DIRECTORY, "ico")
 THEME_FOLDER = os.path.join(MAIN_DIRECTORY, "themes")
 LOGS_FOLDER = os.path.join(MAIN_DIRECTORY, "logs")
 
 # Настройка количества сохраняемых лог-файлов
-MAX_LOG_FILES = 50           # zapret_log_*.txt - основные логи приложения
-MAX_DEBUG_LOG_FILES = 20     # zapret_winws2_debug_*.log - debug логи winws2
+MAX_LOG_FILES = 50           # основные логи приложения
+MAX_DEBUG_LOG_FILES = 20     # debug логи winws2
 
 WINDIVERT_FILTER = os.path.join(MAIN_DIRECTORY, "windivert.filter")
 
 # ═══════════════════════════════════════════════════════════════════
 
-ICON_PATH = os.path.join(ICO_FOLDER, "Zapret2.ico")
-ICON_DEV_PATH = os.path.join(ICO_FOLDER, "ZapretDevLogo4.ico")
+ICON_FILE = "RKNHS.ico"
+ICON_PATH = os.path.join(ICO_FOLDER, ICON_FILE)
+ICON_DEV_PATH = ICON_PATH
 
 # Discord TCP конфигурации
 

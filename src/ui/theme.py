@@ -24,55 +24,62 @@ _THEME_SWITCH_METRICS_ACTIVE: dict[str, object] | None = None
 _THEME_SWITCH_METRICS_NEXT_ID = 0
 _THEME_TOKENS_CACHE: dict[tuple, "ThemeTokens"] = {}
 
-_DEFAULT_CARD_GRADIENT_STOPS = ("#292B37", "#252A3E")
-_DEFAULT_CARD_GRADIENT_STOPS_HOVER = ("#2D3040", "#2A2F45")
-_DEFAULT_CARD_DISABLED_GRADIENT_STOPS = ("#1E2232", "#171B29")
+# Ultra-tech dark defaults (see DESIGN.md). Flat panels + hairlines, not soft Win11 gradients.
+DEFAULT_ACCENT_RGB = (92, 214, 255)  # #5CD6FF terminal cyan
+DEFAULT_ACCENT_HEX = "#5CD6FF"
+
+_DEFAULT_CARD_GRADIENT_STOPS = ("#12151C", "#12151C")
+_DEFAULT_CARD_GRADIENT_STOPS_HOVER = ("#181C26", "#181C26")
+_DEFAULT_CARD_DISABLED_GRADIENT_STOPS = ("#0E1117", "#0E1117")
 _DEFAULT_DNS_SELECTED_GRADIENT_STOPS = (
-    "rgba(95, 205, 254, 0.26)",
-    "rgba(95, 205, 254, 0.18)",
+    "rgba(92, 214, 255, 0.18)",
+    "rgba(92, 214, 255, 0.12)",
 )
 _DEFAULT_DNS_SELECTED_GRADIENT_STOPS_HOVER = (
-    "rgba(95, 205, 254, 0.34)",
-    "rgba(95, 205, 254, 0.24)",
+    "rgba(92, 214, 255, 0.26)",
+    "rgba(92, 214, 255, 0.18)",
 )
-_DEFAULT_DNS_SELECTED_BORDER = "rgba(95, 205, 254, 0.50)"
-_DEFAULT_DNS_SELECTED_BORDER_HOVER = "rgba(95, 205, 254, 0.64)"
+_DEFAULT_DNS_SELECTED_BORDER = "rgba(92, 214, 255, 0.45)"
+_DEFAULT_DNS_SELECTED_BORDER_HOVER = "rgba(92, 214, 255, 0.62)"
 _DEFAULT_SUCCESS_SURFACE_GRADIENT_STOPS_LIGHT = (
-    "rgba(82, 196, 119, 0.18)",
-    "rgba(46, 160, 92, 0.12)",
+    "rgba(61, 220, 151, 0.16)",
+    "rgba(46, 160, 92, 0.10)",
 )
 _DEFAULT_SUCCESS_SURFACE_GRADIENT_STOPS_HOVER_LIGHT = (
-    "rgba(82, 196, 119, 0.24)",
-    "rgba(46, 160, 92, 0.16)",
+    "rgba(61, 220, 151, 0.22)",
+    "rgba(46, 160, 92, 0.14)",
 )
 _DEFAULT_SUCCESS_SURFACE_GRADIENT_STOPS_DARK = (
-    "rgba(98, 214, 129, 0.22)",
-    "rgba(54, 148, 88, 0.16)",
+    "rgba(61, 220, 151, 0.18)",
+    "rgba(54, 148, 88, 0.12)",
 )
 _DEFAULT_SUCCESS_SURFACE_GRADIENT_STOPS_HOVER_DARK = (
-    "rgba(108, 224, 139, 0.30)",
-    "rgba(64, 158, 98, 0.22)",
+    "rgba(61, 220, 151, 0.26)",
+    "rgba(64, 158, 98, 0.16)",
 )
-_DEFAULT_CONTROL_GRADIENT_STOPS_LIGHT = ("rgba(255, 255, 255, 0.92)", "rgba(243, 246, 251, 0.82)")
-_DEFAULT_CONTROL_GRADIENT_STOPS_DARK = ("rgba(255, 255, 255, 0.080)", "rgba(255, 255, 255, 0.040)")
-_DEFAULT_LIST_GRADIENT_STOPS_LIGHT = ("rgba(255, 255, 255, 0.88)", "rgba(244, 247, 252, 0.74)")
-_DEFAULT_LIST_GRADIENT_STOPS_DARK = ("rgba(255, 255, 255, 0.075)", "rgba(255, 255, 255, 0.030)")
+_DEFAULT_CONTROL_GRADIENT_STOPS_LIGHT = ("rgba(255, 255, 255, 0.96)", "rgba(243, 246, 251, 0.90)")
+_DEFAULT_CONTROL_GRADIENT_STOPS_DARK = ("#12151C", "#12151C")
+_DEFAULT_LIST_GRADIENT_STOPS_LIGHT = ("rgba(255, 255, 255, 0.92)", "rgba(244, 247, 252, 0.82)")
+_DEFAULT_LIST_GRADIENT_STOPS_DARK = ("#0E1117", "#0E1117")
 _DEFAULT_ITEM_HOVER_BG_LIGHT = "rgba(0, 0, 0, 0.055)"
-_DEFAULT_ITEM_HOVER_BG_DARK = "rgba(255, 255, 255, 0.080)"
+_DEFAULT_ITEM_HOVER_BG_DARK = "rgba(92, 214, 255, 0.08)"
 _DEFAULT_ITEM_SELECTED_BG_LIGHT = "rgba(68, 136, 217, 0.22)"
-_DEFAULT_ITEM_SELECTED_BG_DARK = "rgba(95, 205, 254, 0.25)"
+_DEFAULT_ITEM_SELECTED_BG_DARK = "rgba(92, 214, 255, 0.16)"
 _DEFAULT_NEUTRAL_CARD_BORDER_LIGHT = "rgba(0, 0, 0, 0.10)"
 _DEFAULT_NEUTRAL_CARD_BORDER_HOVER_LIGHT = "rgba(0, 0, 0, 0.16)"
 _DEFAULT_NEUTRAL_CARD_BORDER_DISABLED_LIGHT = "rgba(0, 0, 0, 0.06)"
 _DEFAULT_NEUTRAL_LIST_BORDER_LIGHT = "rgba(0, 0, 0, 0.10)"
-_DEFAULT_NEUTRAL_CARD_BORDER_DARK = "rgba(255, 255, 255, 0.12)"
-_DEFAULT_NEUTRAL_CARD_BORDER_HOVER_DARK = "rgba(255, 255, 255, 0.20)"
-_DEFAULT_NEUTRAL_CARD_BORDER_DISABLED_DARK = "rgba(255, 255, 255, 0.06)"
-_DEFAULT_NEUTRAL_LIST_BORDER_DARK = "rgba(255, 255, 255, 0.12)"
+_DEFAULT_NEUTRAL_CARD_BORDER_DARK = "rgba(255, 255, 255, 0.10)"
+_DEFAULT_NEUTRAL_CARD_BORDER_HOVER_DARK = "rgba(92, 214, 255, 0.35)"
+_DEFAULT_NEUTRAL_CARD_BORDER_DISABLED_DARK = "rgba(255, 255, 255, 0.05)"
+_DEFAULT_NEUTRAL_LIST_BORDER_DARK = "rgba(255, 255, 255, 0.10)"
 
-_DEFAULT_CARD_GRADIENT_STOPS_LIGHT = ("#FFFFFF", "#EDF3FC")
-_DEFAULT_CARD_GRADIENT_STOPS_HOVER_LIGHT = ("#FFFFFF", "#E6EEFA")
+_DEFAULT_CARD_GRADIENT_STOPS_LIGHT = ("#FFFFFF", "#F4F7FB")
+_DEFAULT_CARD_GRADIENT_STOPS_HOVER_LIGHT = ("#FFFFFF", "#EEF3FA")
 _DEFAULT_CARD_DISABLED_GRADIENT_STOPS_LIGHT = ("#F3F7FD", "#E6EEF9")
+
+_FONT_UI_QSS = "'Segoe UI Variable', 'Segoe UI', sans-serif"
+_FONT_MONO_QSS = "'Cascadia Mono', 'Consolas', 'Courier New', monospace"
 
 _QTA_PIXMAP_CACHE_MAX = 512
 _QTA_PIXMAP_CACHE: OrderedDict[tuple[str, str, int], QPixmap] = OrderedDict()
@@ -345,13 +352,13 @@ def apply_window_background(window, theme_name: str | None = None, preset: str |
         from PyQt6.QtGui import QColor as _QColor
 
         if preset == "amoled" or preset == "rkn_chan":
-            # Solid black, remove any DWM effects
+            # Solid void (DESIGN.md), remove any DWM effects
             if hasattr(window, 'windowEffect'):
                 try:
                     window.windowEffect.removeBackgroundEffect(window.winId())
                 except Exception:
                     pass
-            bg = _QColor(0, 0, 0)
+            bg = _QColor(0x0A, 0x0C, 0x10)
             window.setCustomBackgroundColor(bg, bg)
             # Clear tint overlay (may be set by apply_aero_effect on Win11)
             if hasattr(window, 'clear_tint_overlay'):
@@ -409,7 +416,7 @@ def apply_window_background(window, theme_name: str | None = None, preset: str |
                     window.windowEffect.removeBackgroundEffect(window.winId())
                 except Exception:
                     pass
-            solid = _QColor(250, 250, 250) if get_theme_tokens().is_light else _QColor(32, 32, 32)
+            solid = _QColor(250, 250, 250) if get_theme_tokens().is_light else _QColor(0x0A, 0x0C, 0x10)
             window.setCustomBackgroundColor(solid, solid)
             if hasattr(window, 'clear_tint_overlay'):
                 window.clear_tint_overlay()
@@ -479,11 +486,7 @@ def _sync_theme_accent_to_qfluent(theme_name: str) -> None:
 
 @dataclass(frozen=True)
 class ThemeTokens:
-    """Small set of QSS-ready tokens derived from theme_name.
-
-    Keep this minimal and semantic: callers should use tokens instead of hard-coded
-    rgba(255,255,255,...) that breaks light themes.
-    """
+    """QSS-ready tokens for theme-aware custom widgets (see DESIGN.md)."""
 
     theme_name: str
     is_light: bool
@@ -527,6 +530,15 @@ class ThemeTokens:
     toggle_off_disabled_border: str
 
     font_family_qss: str
+    font_mono_qss: str
+    radius_sm: str
+    radius_md: str
+    border_hairline: str
+    status_ok: str
+    status_warn: str
+    status_err: str
+    void_bg: str
+    panel_bg: str
 
 
 def get_theme_tokens(theme_name: str | None = None) -> ThemeTokens:
@@ -549,7 +561,7 @@ def get_theme_tokens(theme_name: str | None = None) -> ThemeTokens:
         elif raw.startswith("Темная") or raw == "dark":
             is_light = False
 
-    accent_rgb = _get_qfluent_themecolor() or (0, 120, 212)
+    accent_rgb = _get_qfluent_themecolor() or DEFAULT_ACCENT_RGB
 
     # Cache keyed on palette + accent (cleared on accent change)
     cache_key = ("light" if is_light else "dark", accent_rgb)
@@ -560,23 +572,23 @@ def get_theme_tokens(theme_name: str | None = None) -> ThemeTokens:
     token_theme_name = "light" if is_light else "dark"
     accent_rgb_str = f"{accent_rgb[0]}, {accent_rgb[1]}, {accent_rgb[2]}"
     accent_hex = _rgb_to_hex(accent_rgb)
-    accent_hover_hex = _rgb_to_hex(_mix_rgb(accent_rgb, (255, 255, 255), 0.12))
-    accent_pressed_hex = _rgb_to_hex(_mix_rgb(accent_rgb, (0, 0, 0), 0.12))
+    accent_hover_hex = _rgb_to_hex(_mix_rgb(accent_rgb, (255, 255, 255), 0.14))
+    accent_pressed_hex = _rgb_to_hex(_mix_rgb(accent_rgb, (0, 0, 0), 0.16))
     accent_fg = _accent_foreground_color(accent_rgb)
 
     if is_light:
-        fg = "rgba(0, 0, 0, 0.90)"
-        fg_muted = "rgba(0, 0, 0, 0.65)"
-        fg_faint = "rgba(0, 0, 0, 0.40)"
-        icon_fg = "#6b7280"
-        icon_fg_muted = "#7d8594"
+        fg = "rgba(12, 18, 28, 0.92)"
+        fg_muted = "rgba(12, 18, 28, 0.62)"
+        fg_faint = "rgba(12, 18, 28, 0.40)"
+        icon_fg = "#4b5563"
+        icon_fg_muted = "#6b7280"
         icon_fg_faint = "#9aa2af"
         divider = "rgba(0, 0, 0, 0.08)"
         divider_strong = "rgba(0, 0, 0, 0.14)"
-        surface_bg = "rgba(0, 0, 0, 0.035)"
-        surface_bg_hover = "rgba(0, 0, 0, 0.055)"
-        surface_bg_pressed = "rgba(0, 0, 0, 0.075)"
-        surface_bg_disabled = "rgba(0, 0, 0, 0.020)"
+        surface_bg = "rgba(0, 0, 0, 0.03)"
+        surface_bg_hover = "rgba(0, 0, 0, 0.05)"
+        surface_bg_pressed = "rgba(0, 0, 0, 0.07)"
+        surface_bg_disabled = "rgba(0, 0, 0, 0.02)"
         surface_border = "rgba(0, 0, 0, 0.10)"
         surface_border_hover = "rgba(0, 0, 0, 0.16)"
         surface_border_disabled = "rgba(0, 0, 0, 0.06)"
@@ -588,33 +600,39 @@ def get_theme_tokens(theme_name: str | None = None) -> ThemeTokens:
         toggle_off_border = "rgba(120, 127, 138, 0.64)"
         toggle_off_disabled_bg = "rgba(154, 160, 170, 0.26)"
         toggle_off_disabled_border = "rgba(138, 145, 156, 0.34)"
+        void_bg = "#F3F5F8"
+        panel_bg = "#FFFFFF"
+        border_hairline = "rgba(0, 0, 0, 0.10)"
     else:
-        fg = "rgba(255, 255, 255, 0.92)"
-        fg_muted = "rgba(255, 255, 255, 0.65)"
-        fg_faint = "rgba(255, 255, 255, 0.35)"
-        icon_fg = "#f5f5f5"
-        icon_fg_muted = "#d2d7df"
-        icon_fg_faint = "#aeb5c1"
-        divider = "rgba(255, 255, 255, 0.06)"
-        divider_strong = "rgba(255, 255, 255, 0.10)"
-        surface_bg = "rgba(255, 255, 255, 0.04)"
-        surface_bg_hover = "rgba(255, 255, 255, 0.07)"
-        surface_bg_pressed = "rgba(255, 255, 255, 0.10)"
+        fg = "rgba(235, 242, 250, 0.94)"
+        fg_muted = "rgba(180, 194, 210, 0.72)"
+        fg_faint = "rgba(140, 156, 176, 0.48)"
+        icon_fg = "#E8EEF6"
+        icon_fg_muted = "#A8B4C4"
+        icon_fg_faint = "#7A8799"
+        divider = "rgba(255, 255, 255, 0.07)"
+        divider_strong = "rgba(255, 255, 255, 0.12)"
+        surface_bg = "rgba(255, 255, 255, 0.03)"
+        surface_bg_hover = "rgba(92, 214, 255, 0.08)"
+        surface_bg_pressed = "rgba(92, 214, 255, 0.12)"
         surface_bg_disabled = "rgba(255, 255, 255, 0.02)"
-        surface_border = "rgba(255, 255, 255, 0.12)"
-        surface_border_hover = "rgba(255, 255, 255, 0.20)"
-        surface_border_disabled = "rgba(255, 255, 255, 0.06)"
+        surface_border = "rgba(255, 255, 255, 0.10)"
+        surface_border_hover = "rgba(92, 214, 255, 0.35)"
+        surface_border_disabled = "rgba(255, 255, 255, 0.05)"
         scrollbar_track = "rgba(255, 255, 255, 0.03)"
-        scrollbar_handle = "rgba(255, 255, 255, 0.15)"
-        scrollbar_handle_hover = "rgba(255, 255, 255, 0.25)"
-        toggle_off_bg = "rgba(132, 140, 154, 0.58)"
-        toggle_off_bg_hover = "rgba(144, 152, 166, 0.70)"
-        toggle_off_border = "rgba(170, 178, 192, 0.84)"
-        toggle_off_disabled_bg = "rgba(122, 130, 144, 0.34)"
-        toggle_off_disabled_border = "rgba(150, 158, 172, 0.48)"
+        scrollbar_handle = "rgba(255, 255, 255, 0.14)"
+        scrollbar_handle_hover = "rgba(92, 214, 255, 0.40)"
+        toggle_off_bg = "rgba(40, 46, 58, 0.95)"
+        toggle_off_bg_hover = "rgba(52, 60, 74, 0.95)"
+        toggle_off_border = "rgba(255, 255, 255, 0.14)"
+        toggle_off_disabled_bg = "rgba(28, 32, 40, 0.80)"
+        toggle_off_disabled_border = "rgba(255, 255, 255, 0.06)"
+        void_bg = "#0A0C10"
+        panel_bg = "#12151C"
+        border_hairline = "rgba(255, 255, 255, 0.10)"
 
-    accent_soft_bg = f"rgba({accent_rgb_str}, 0.15)"
-    accent_soft_bg_hover = f"rgba({accent_rgb_str}, 0.20)"
+    accent_soft_bg = f"rgba({accent_rgb_str}, 0.14)"
+    accent_soft_bg_hover = f"rgba({accent_rgb_str}, 0.22)"
 
     tokens = ThemeTokens(
         theme_name=token_theme_name,
@@ -650,7 +668,16 @@ def get_theme_tokens(theme_name: str | None = None) -> ThemeTokens:
         toggle_off_border=toggle_off_border,
         toggle_off_disabled_bg=toggle_off_disabled_bg,
         toggle_off_disabled_border=toggle_off_disabled_border,
-        font_family_qss="'Segoe UI Variable', 'Segoe UI', Arial, sans-serif",
+        font_family_qss=_FONT_UI_QSS,
+        font_mono_qss=_FONT_MONO_QSS,
+        radius_sm="2px",
+        radius_md="2px",
+        border_hairline=border_hairline,
+        status_ok="#3DDC97",
+        status_warn="#F0B429",
+        status_err="#FF5C7A",
+        void_bg=void_bg,
+        panel_bg=panel_bg,
     )
 
     _THEME_TOKENS_CACHE[cache_key] = tokens
@@ -1376,6 +1403,13 @@ class ThemeManager:
             # Sync accent color and invalidate token cache.
             _sync_theme_accent_to_qfluent(clean)
             invalidate_theme_tokens_cache()
+
+            try:
+                from ui.tech_style import apply_tech_style_to_window
+
+                apply_tech_style_to_window(self.widget)
+            except Exception as style_error:
+                log(f"Tech style apply skipped: {style_error}", "DEBUG")
 
             self.current_theme = clean
 

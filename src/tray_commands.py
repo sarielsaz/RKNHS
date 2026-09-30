@@ -59,13 +59,13 @@ def apply_window_opacity(*, set_window_opacity, value: int) -> None:
 
 
 def resolve_tray_icon_path() -> str:
-    from config.build_info import CHANNEL
-    from config.config import ICON_DEV_PATH, ICON_PATH
+    from app.app_icon_resources import resolve_existing_app_icon_path
+    from config.config import ICON_PATH
 
-    icon_path = ICON_DEV_PATH if CHANNEL.lower() == "dev" else ICON_PATH
-    if not os.path.exists(icon_path):
-        icon_path = ICON_PATH
-    return os.path.abspath(icon_path)
+    icon_path = resolve_existing_app_icon_path()
+    if icon_path:
+        return icon_path
+    return os.path.abspath(str(ICON_PATH or ""))
 
 
 def init_tray(

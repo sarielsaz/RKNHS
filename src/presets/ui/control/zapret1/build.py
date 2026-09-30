@@ -73,7 +73,7 @@ def build_winws1_pages_management_section(
             big_action_button_cls=big_action_button_cls,
             stop_button_cls=stop_button_cls,
             start_key="page.winws1_control.button.start",
-            start_default="Запустить Zapret",
+            start_default="Запустить RKNHS",
             stop_key="page.winws1_control.button.stop_winws",
             stop_default=f"Остановить {EXE_NAME_WINWS1}",
             stop_exit_key="page.winws1_control.button.stop_and_exit",

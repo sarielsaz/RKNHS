@@ -103,11 +103,11 @@ class CloseDialog(MessageBoxBase):
     def _install_accessibility(self, description: str) -> None:
         if self._launch_running:
             body_name = "Описание закрытия: DPI запущен"
-            stop_name = "Закрыть ZapretGUI и остановить DPI"
+            stop_name = "Закрыть RKNHS и остановить DPI"
             stop_description = "Закрывает окно и остановит DPI. Обход блокировок перестанет работать."
         else:
             body_name = "Описание закрытия: DPI не запущен"
-            stop_name = "Закрыть ZapretGUI и остановить DPI, недоступно"
+            stop_name = "Закрыть RKNHS и остановить DPI, недоступно"
             stop_description = "DPI сейчас не запущен, поэтому останавливать нечего."
 
         title_name = "Диалог: Закрыть приложение"
@@ -115,7 +115,7 @@ class CloseDialog(MessageBoxBase):
         set_control_accessibility(
             self.titleLabel,
             name=title_name,
-            description="Окно выбора действия при закрытии ZapretGUI.",
+            description="Окно выбора действия при закрытии RKNHS.",
         )
         set_control_accessibility(
             self.bodyLabel,
@@ -125,16 +125,16 @@ class CloseDialog(MessageBoxBase):
         set_state_text(self.bodyLabel, body_name)
         set_control_accessibility(
             self.trayButton,
-            name="Свернуть ZapretGUI в трей",
+            name="Свернуть RKNHS в трей",
             description="Скрывает окно и оставляет окно доступным из трея. DPI продолжит работать.",
         )
-        set_state_text(self.trayButton, "Свернуть ZapretGUI в трей")
+        set_state_text(self.trayButton, "Свернуть RKNHS в трей")
         set_control_accessibility(
             self.guiOnlyButton,
-            name="Закрыть только окно ZapretGUI",
+            name="Закрыть только окно RKNHS",
             description="Закрывает только GUI. DPI продолжит работать в фоне.",
         )
-        set_state_text(self.guiOnlyButton, "Закрыть только окно ZapretGUI")
+        set_state_text(self.guiOnlyButton, "Закрыть только окно RKNHS")
         set_control_accessibility(
             self.stopDpiButton,
             name=stop_name,
@@ -143,10 +143,10 @@ class CloseDialog(MessageBoxBase):
         set_state_text(self.stopDpiButton, stop_name)
         set_control_accessibility(
             self.cancelLinkButton,
-            name="Отменить закрытие ZapretGUI",
+            name="Отменить закрытие RKNHS",
             description="Закрывает этот вопрос и возвращает вас в программу.",
         )
-        set_state_text(self.cancelLinkButton, "Отменить закрытие ZapretGUI")
+        set_state_text(self.cancelLinkButton, "Отменить закрытие RKNHS")
 
     def _on_tray(self):
         self.result_tray = True

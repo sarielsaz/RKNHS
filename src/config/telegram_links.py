@@ -25,7 +25,7 @@ def open_telegram_link(domain: str, post: int = None, slug: str = None) -> None:
     Открывает Telegram ссылку через tg:// или https:// (fallback)
 
     Args:
-        domain: Имя канала/бота (например 'zaprethelp')
+        domain: Имя канала/бота (например 'sazzero')
         post: Номер поста (опционально)
         slug: Slug для addlist (опционально, вместо domain)
     """

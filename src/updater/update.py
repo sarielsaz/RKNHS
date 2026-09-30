@@ -318,7 +318,7 @@ def compare_versions(v1: str, v2: str) -> int:
             return 0
             
     except Exception as e:
-        log(f"Error comparing versions '{v1}' and '{v2}': {e}", "🔁❌ ERROR")
+        log(f"Error comparing versions '{v1}' and '{v2}': {e}", "WARNING")
         return -1 if v1 < v2 else (1 if v1 > v2 else 0)
 
 # ──────────────────────────── фоновой воркер ──────────────────────────────

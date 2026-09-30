@@ -231,7 +231,11 @@ class Winws1StrategyRunner(StrategyRunnerBase):
         return self._compile_preset_artifact(artifact.preset_path)
 
     def _build_winws1_at_config_text(self, source_text: str) -> str:
-        args = self._resolve_file_paths(launch_args_from_preset_text(source_text))
+        from .args_filters import apply_all_filters
+
+        args = launch_args_from_preset_text(source_text)
+        args = apply_all_filters(args, self.lists_dir)
+        args = self._resolve_file_paths(args)
         if not args:
             return ""
         return "\n".join(shlex.quote(arg) for arg in args) + "\n"

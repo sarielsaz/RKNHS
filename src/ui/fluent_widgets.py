@@ -14,6 +14,7 @@ import qtawesome as qta
 
 from ui.theme import get_cached_qta_pixmap, get_themed_qta_icon, get_theme_tokens
 from ui.theme_refresh import ThemeRefreshBinding
+from ui.tech_style import build_settings_card_qss, resolve_tech_tokens, apply_setting_card_group_spacing
 from ui.pulsing_dot import PulsingDot
 from ui.accessibility import (
     set_accessible_description,
@@ -104,7 +105,7 @@ class SettingsCard(QWidget):
             content_host = QWidget(card_root)
             content_layout = QVBoxLayout(content_host)
             content_layout.setContentsMargins(0, 0, 0, 0)
-            content_layout.setSpacing(12)
+            content_layout.setSpacing(10)
             try:
                 card_root.viewLayout.addWidget(content_host)
             except Exception:
@@ -116,13 +117,35 @@ class SettingsCard(QWidget):
         else:
             card_root = CardWidget(self)
             content_layout = QVBoxLayout(card_root)
-            content_layout.setContentsMargins(16, 16, 16, 16)
-            content_layout.setSpacing(12)
+            content_layout.setContentsMargins(12, 12, 12, 12)
+            content_layout.setSpacing(10)
             self.main_layout = content_layout
 
         self._card_root = card_root
         outer_layout.addWidget(card_root)
         self._sync_title_accessibility(title)
+        self._theme_refresh = ThemeRefreshBinding(self, self._apply_tech_card_style)
+        self._apply_tech_card_style(force=True)
+
+    def _apply_tech_card_style(self, tokens=None, force: bool = False) -> None:
+        _ = force
+        try:
+            from qfluentwidgets import setCustomStyleSheet
+
+            qss = build_settings_card_qss(tokens)
+            if self._card_root is not None:
+                # Prefer additive custom sheet so Fluent header colors are not wiped.
+                try:
+                    setCustomStyleSheet(self._card_root, qss, qss)
+                except Exception:
+                    self._card_root.setStyleSheet(qss)
+            if self._header_label is not None:
+                t = resolve_tech_tokens(tokens)
+                self._header_label.setStyleSheet(
+                    f"color: {t.fg}; background: transparent; font-weight: 600;"
+                )
+        except Exception:
+            pass
 
     def add_widget(self, widget: QWidget):
         self.main_layout.addWidget(widget)
@@ -374,6 +397,14 @@ def enable_setting_card_group_auto_height(group):
 
     if group is None:
         return group
+
+    try:
+        layout = getattr(group, "cardLayout", None)
+        if layout is not None and hasattr(layout, "setSpacing"):
+            layout.setSpacing(10)
+        apply_setting_card_group_spacing(group)
+    except Exception:
+        pass
 
     if getattr(group, "_setting_card_group_auto_height_filter", None) is None:
         refresh_filter = _SettingCardGroupAutoHeightFilter(group)

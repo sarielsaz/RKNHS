@@ -7,6 +7,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PyQt6.QtWidgets import QApplication, QVBoxLayout, QWidget
 
+from app.branding import HIDE_DONATE_NAV, HIDE_EXTERNAL_LINKS
 from app.state_store import MainWindowStateStore
 from ui.pages.about_page_about_build import build_about_page_about_content
 from ui.pages.about_page import AboutPage
@@ -40,47 +41,27 @@ class AboutPageAccessibilityTests(unittest.TestCase):
             "Открыть настройки обновлений",
         )
         self.assertIn("автоматической проверки", widgets.update_btn.accessibleDescription())
-        self.assertEqual(widgets.about_app_name_label.accessibleName(), "Название программы: Zapret 2 GUI")
+        self.assertEqual(widgets.about_app_name_label.accessibleName(), "Название программы: RKNHS")
         self.assertEqual(
             widgets.about_app_name_label.property("screenReaderStateText"),
-            "Название программы: Zapret 2 GUI",
+            "Название программы: RKNHS",
         )
         self.assertEqual(widgets.about_version_value_label.accessibleName(), "Версия программы: 9.9.9")
         self.assertEqual(
             widgets.about_version_value_label.property("screenReaderStateText"),
             "Версия программы: 9.9.9",
         )
-        self.assertEqual(widgets.sub_status_label.accessibleName(), "Статус подписки: Free версия")
-        self.assertEqual(
-            widgets.sub_status_label.property("screenReaderStateText"),
-            "Статус подписки: Free версия",
-        )
-        self.assertEqual(
-            widgets.sub_desc_label.property("screenReaderStateText"),
-            "Описание подписки: Подписка Zapret Premium открывает доступ к дополнительным темам, "
-            "приоритетной поддержке и VPN-сервису.",
-        )
-        self.assertEqual(widgets.premium_btn.accessibleName(), "Открыть Premium и VPN")
-        self.assertEqual(widgets.premium_btn.property("screenReaderStateText"), "Открыть Premium и VPN")
-        self.assertIn("Premium", widgets.premium_btn.accessibleDescription())
 
-        self.assertEqual(widgets.course_group.accessibleName(), "Раздел о программе: Обучение")
-        self.assertEqual(
-            widgets.course_group.property("screenReaderStateText"),
-            "Раздел о программе: Обучение",
-        )
-        self.assertEqual(widgets.youtube_course_card.accessibleName(), "Открыть курс и гайд по Zapret 2")
-        self.assertIn("Видео по настройке", widgets.youtube_course_card.accessibleDescription())
-        self.assertEqual(
-            bytes(widgets.youtube_course_card.linkButton.getUrl().toEncoded()).decode("ascii"),
-            "https://www.youtube.com/@%D0%9F%D1%80%D0%B8%D0%B2%D0%B0%D1%82%D0%BD%D0%BE%D1%81%D1%82%D1%8C/videos",
-        )
-        self.assertEqual(widgets.youtube_playlist_card.accessibleName(), "Открыть плейлист курса по Zapret 2")
-        self.assertIn("Все видео курса", widgets.youtube_playlist_card.accessibleDescription())
-        self.assertEqual(
-            widgets.youtube_playlist_card.linkButton.getUrl().toString(),
-            "https://www.youtube.com/playlist?list=PLa6yzOvgEWW0F1PL0D8pOPI8lD_rfLL1s",
-        )
+        # RKNHS fork hides donate/premium UI and upstream course/docs links.
+        self.assertTrue(HIDE_DONATE_NAV)
+        self.assertTrue(HIDE_EXTERNAL_LINKS)
+        self.assertIsNone(widgets.premium_btn)
+        self.assertIsNone(widgets.sub_status_label)
+        self.assertIsNone(widgets.course_group)
+        self.assertIsNone(widgets.youtube_course_card)
+        self.assertIsNone(widgets.youtube_playlist_card)
+        self.assertIsNone(widgets.legacy_docs_group)
+        self.assertIsNone(widgets.legacy_course_group)
 
     def test_subscription_status_update_reads_state_for_screen_reader(self) -> None:
         page = AboutPage.__new__(AboutPage)
@@ -105,7 +86,7 @@ class AboutPageAccessibilityTests(unittest.TestCase):
         self.addCleanup(widgets.stacked_widget.deleteLater)
 
         self.assertEqual(widgets.tabs_pivot.accessibleName(), "Вкладки страницы о программе, выбрано: О программе")
-        self.assertIn("О программе, Справка или Zapret KVN", widgets.tabs_pivot.accessibleDescription())
+        self.assertIn("О программе, Справка или Sazzero", widgets.tabs_pivot.accessibleDescription())
         self.assertEqual(
             widgets.tabs_pivot.items["about"].accessibleName(),
             "Вкладки страницы о программе: О программе, выбрано",
@@ -143,10 +124,10 @@ class AboutPageAccessibilityTests(unittest.TestCase):
 
         AboutPage._retranslate_about_tab(page)
 
-        self.assertEqual(page.about_app_name_label.accessible_name, "Название программы: Zapret 2 GUI")
+        self.assertEqual(page.about_app_name_label.accessible_name, "Название программы: RKNHS")
         self.assertEqual(
             page.about_app_name_label.property("screenReaderStateText"),
-            "Название программы: Zapret 2 GUI",
+            "Название программы: RKNHS",
         )
         self.assertTrue(page.about_version_value_label.accessible_name.startswith("Версия программы: "))
         self.assertEqual(
@@ -156,16 +137,12 @@ class AboutPageAccessibilityTests(unittest.TestCase):
         self.assertEqual(page.update_btn.accessible_name, "Открыть настройки обновлений")
         self.assertEqual(page.update_btn.property("screenReaderStateText"), "Открыть настройки обновлений")
         self.assertIn("автоматической проверки", page.update_btn.accessible_description)
-        self.assertEqual(
-            page.sub_desc_label.property("screenReaderStateText"),
-            "Описание подписки: Подписка Zapret Premium открывает доступ к дополнительным темам, "
-            "приоритетной поддержке и VPN-сервису.",
-        )
+        self.assertIn("RKNHS Premium", page.sub_desc_label.property("screenReaderStateText"))
         self.assertEqual(page.premium_btn.accessible_name, "Открыть Premium и VPN")
         self.assertEqual(page.premium_btn.property("screenReaderStateText"), "Открыть Premium и VPN")
         self.assertIn("Premium", page.premium_btn.accessible_description)
 
-    def test_about_page_shows_support_blocks_on_about_tab(self) -> None:
+    def test_about_page_hides_upstream_support_blocks_on_about_tab(self) -> None:
         page = AboutPage(
             open_premium=lambda: None,
             open_updates=lambda: None,
@@ -175,11 +152,12 @@ class AboutPageAccessibilityTests(unittest.TestCase):
         self.addCleanup(page.cleanup)
         self.addCleanup(page.deleteLater)
 
+        self.assertTrue(HIDE_EXTERNAL_LINKS)
         self.assertNotIn("support", page.tabs_pivot.items)
         self.assertEqual(page.stacked_widget.count(), 3)
-        self.assertIsNotNone(page._support_discussions_card)
-        self.assertIsNotNone(page._support_telegram_card)
-        self.assertIsNotNone(page._support_discord_card)
+        self.assertIsNone(page._support_discussions_card)
+        self.assertIsNone(page._support_telegram_card)
+        self.assertIsNone(page._support_discord_card)
 
         page.switch_to_tab("support")
 
@@ -200,31 +178,28 @@ class _TextWidget:
     def text(self) -> str:
         return self.text_value
 
-    def accessibleName(self) -> str:  # noqa: N802
-        return self.accessible_name
-
     def setAccessibleName(self, text: str) -> None:  # noqa: N802
         self.accessible_name = str(text)
-
-    def accessibleDescription(self) -> str:  # noqa: N802
-        return self.accessible_description
 
     def setAccessibleDescription(self, text: str) -> None:  # noqa: N802
         self.accessible_description = str(text)
 
-    def property(self, name: str) -> object:
-        return self.properties.get(name)
+    def setProperty(self, name: str, value) -> None:  # noqa: N802
+        self.properties[str(name)] = value
 
-    def setProperty(self, name: str, value: object) -> None:  # noqa: N802
-        self.properties[name] = value
+    def property(self, name: str):  # noqa: N802
+        return self.properties.get(str(name))
+
+    def accessibleName(self) -> str:  # noqa: N802
+        return self.accessible_name
+
+    def accessibleDescription(self) -> str:  # noqa: N802
+        return self.accessible_description
 
 
 class _IconWidget:
-    def __init__(self) -> None:
-        self.pixmap = None
-
-    def setPixmap(self, pixmap) -> None:  # noqa: N802
-        self.pixmap = pixmap
+    def setPixmap(self, _pixmap) -> None:  # noqa: N802
+        return None
 
 
 if __name__ == "__main__":

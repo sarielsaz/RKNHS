@@ -46,11 +46,11 @@ class FluentAppWindowChromeTests(unittest.TestCase):
         search_widget = _SidebarSearchNavWidget()
         self.addCleanup(search_widget.deleteLater)
 
-        self.assertEqual(search_widget.accessibleName(), "Глобальный поиск по ZapretGUI")
-        self.assertEqual(search_widget.property("screenReaderStateText"), "Глобальный поиск по ZapretGUI")
+        self.assertEqual(search_widget.accessibleName(), "Глобальный поиск по RKNHS")
+        self.assertEqual(search_widget.property("screenReaderStateText"), "Глобальный поиск по RKNHS")
         self.assertIn("страницу, preset или profile", search_widget.accessibleDescription())
-        self.assertEqual(search_widget._search.accessibleName(), "Глобальный поиск по ZapretGUI")
-        self.assertEqual(search_widget._search.property("screenReaderStateText"), "Глобальный поиск по ZapretGUI")
+        self.assertEqual(search_widget._search.accessibleName(), "Глобальный поиск по RKNHS")
+        self.assertEqual(search_widget._search.property("screenReaderStateText"), "Глобальный поиск по RKNHS")
         self.assertIn("страницу, preset или profile", search_widget._search.accessibleDescription())
 
     def test_window_icon_file_lookup_lives_outside_ui_window(self) -> None:

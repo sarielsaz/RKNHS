@@ -35,6 +35,22 @@ class ApplicationLifecycleWindowPort:
             telegram_proxy_feature=telegram_proxy_feature,
         )
 
+    def show_tray_unavailable_notice(self) -> None:
+        try:
+            from qfluentwidgets import InfoBar
+
+            InfoBar.warning(
+                title="Трей недоступен",
+                content=(
+                    "Не удалось свернуть окно в трей. "
+                    "Перезапустите RKNHS или проверьте лог приложения."
+                ),
+                parent=self._window,
+                duration=6000,
+            )
+        except Exception:
+            pass
+
 
 def build_application_lifecycle_window_port(window) -> ApplicationLifecycleWindowPort:
     return ApplicationLifecycleWindowPort(window)

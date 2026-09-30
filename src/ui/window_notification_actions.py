@@ -102,7 +102,54 @@ class WindowNotificationActionHandler:
         if kind == "dismiss":
             return lambda: self._close_bar(bar)
 
+        if kind == "preset_guide_isp":
+            return lambda: self._run_preset_guide_isp(bar)
+
+        if kind == "preset_guide_blockcheck":
+            return lambda: self._run_preset_guide_blockcheck(bar)
+
+        if kind == "preset_guide_keep":
+            return lambda: self._close_bar(bar)
+
         return None
+
+    def _run_preset_guide_isp(self, bar=None) -> None:
+        self._close_bar(bar)
+        try:
+            from settings.isp_auto_preset import maybe_apply_isp_preset_detailed
+            from settings.store import set_isp_auto_preset_enabled
+
+            set_isp_auto_preset_enabled(True)
+            outcome = maybe_apply_isp_preset_detailed(force=True)
+            if outcome.applied:
+                from app.ui_texts import tr as tr_catalog
+
+                self._notify(
+                    advisory_notification(
+                        level="success",
+                        title=tr_catalog("page.control.isp_auto.toast.title", default="Пресет по провайдеру"),
+                        content=tr_catalog(
+                            "page.control.isp_auto.toast.body",
+                            default="Подобран пресет «{preset}» для {isp}",
+                        ).format(preset=outcome.preset_file, isp=outcome.isp_label or "ISP"),
+                        source="startup.preset_guide.isp",
+                        presentation="infobar",
+                        queue="immediate",
+                        duration=9000,
+                        dedupe_key="startup.preset_guide.isp",
+                    )
+                )
+        except Exception as e:
+            log(f"Preset guide ISP action failed: {e}", "DEBUG")
+
+    def _run_preset_guide_blockcheck(self, bar=None) -> None:
+        self._close_bar(bar)
+        try:
+            from app.page_names import PageName
+
+            self._show_page(PageName.BLOCKCHECK)
+        except Exception as e:
+            log(f"Preset guide Blockcheck action failed: {e}", "DEBUG")
 
     def copy_to_clipboard_with_feedback(self, text: str, *, label: str = "Текст") -> None:
         try:

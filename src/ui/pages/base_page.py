@@ -23,6 +23,7 @@ from ui.smooth_scroll import (
     apply_page_smooth_scroll_preference,
     apply_smooth_scroll_mode,
 )
+from ui.tech_type import format_terminal_heading
 
 
 class ScrollBlockingPlainTextEdit(_FluentPlainTextEdit):
@@ -128,8 +129,8 @@ class BasePage(_FluentScrollArea):
 
         # --- Main layout ---
         self.vBoxLayout = QVBoxLayout(self.content)
-        self.vBoxLayout.setContentsMargins(36, 28, 36, 28)
-        self.vBoxLayout.setSpacing(16)
+        self.vBoxLayout.setContentsMargins(18, 16, 18, 18)
+        self.vBoxLayout.setSpacing(20)
         self.vBoxLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Public layout alias used by page subclasses.
@@ -137,7 +138,7 @@ class BasePage(_FluentScrollArea):
 
         # --- Title ---
         self.title_label = TitleLabel(self.content)
-        self.title_label.setText(title)
+        self.title_label.setText(format_terminal_heading(title))
         set_state_text(self.title_label, f"Заголовок страницы: {title}")
         self.vBoxLayout.addWidget(self.title_label)
 
@@ -150,6 +151,13 @@ class BasePage(_FluentScrollArea):
             self.vBoxLayout.addWidget(self.subtitle_label)
         else:
             self.subtitle_label = None
+
+        try:
+            from ui.tech_style import apply_page_header_styles
+
+            apply_page_header_styles(self)
+        except Exception:
+            pass
 
     def _set_page_registry_name(self, page_name) -> None:
         self._page_registry_name = page_name
@@ -271,11 +279,17 @@ class BasePage(_FluentScrollArea):
             text = tr_catalog(text_key, language=self._ui_language, default=text or text_key)
 
         label = StrongBodyLabel(self.content)
-        label.setText(text)
+        label.setText(format_terminal_heading(text))
         set_state_text(label, f"Раздел страницы: {text}")
         label.setProperty("tone", "primary")
         if text_key:
             self._section_title_bindings.append((label, text_key, fallback_text or text_key))
+        try:
+            from ui.tech_style import apply_page_header_styles
+
+            apply_page_header_styles(self)
+        except Exception:
+            pass
         self.vBoxLayout.addWidget(label)
         if return_widget:
             return label
@@ -288,14 +302,25 @@ class BasePage(_FluentScrollArea):
         _ = tokens
         _ = force
 
+    def _on_page_theme_refresh(self, tokens=None, force: bool = False) -> None:
+        try:
+            from ui.tech_style import apply_page_header_styles
+            from ui.theme import get_theme_tokens
+
+            apply_page_header_styles(self, tokens or get_theme_tokens())
+        except Exception:
+            pass
+        try:
+            self._apply_page_theme(tokens, force=force)
+        except Exception:
+            pass
+
     def _create_page_theme_refresh_if_needed(self):
-        if type(self)._apply_page_theme is BasePage._apply_page_theme:
-            return None
         from ui.theme_refresh import ThemeRefreshBinding
 
         return ThemeRefreshBinding(
             self,
-            self._apply_page_theme,
+            self._on_page_theme_refresh,
             is_build_pending=lambda: False,
         )
 
@@ -341,18 +366,31 @@ class BasePage(_FluentScrollArea):
         step_started_at = _time.perf_counter()
         self._schedule_activation()
         self._log_show_step_timing("qt_show.schedule_activation", step_started_at)
-        step_started_at = _time.perf_counter()
-        self._schedule_page_theme_refresh_flush()
-        self._log_show_step_timing("qt_show.schedule_theme_flush", step_started_at)
-        self.request_keyboard_focus()
+        # Theme flush only when a refresh was deferred while hidden.
+        refresh = getattr(self, "_page_theme_refresh", None)
+        if refresh is not None and (
+            bool(getattr(refresh, "_refresh_pending_when_hidden", False))
+            or bool(getattr(refresh, "_pending_force", False))
+        ):
+            self._schedule_page_theme_refresh_flush()
+        # Focus scan is expensive on heavy pages — defer slightly after paint.
+        QTimer.singleShot(30, self._focus_first_keyboard_control_if_needed)
+        if not getattr(self, "_rknhs_enter_played", False):
+            self._rknhs_enter_played = True
+            try:
+                from ui.animation_policy import run_page_enter_animation
+
+                run_page_enter_animation(self.content)
+            except Exception:
+                pass
 
     def request_keyboard_focus(self) -> None:
         """Просит страницу поставить фокус на первый удобный для клавиатуры элемент."""
 
-        self._schedule_first_keyboard_focus()
+        QTimer.singleShot(30, self._focus_first_keyboard_control_if_needed)
 
     def _schedule_first_keyboard_focus(self) -> None:
-        QTimer.singleShot(0, self._focus_first_keyboard_control_if_needed)
+        QTimer.singleShot(30, self._focus_first_keyboard_control_if_needed)
 
     def _focus_first_keyboard_control_if_needed(self) -> None:
         """Ставит фокус на первый управляемый с клавиатуры элемент страницы."""
@@ -381,16 +419,44 @@ class BasePage(_FluentScrollArea):
             return False
 
     def _first_keyboard_focus_control(self):
+        # Prefer shallow walk — full findChildren on Hosts/BlockCheck is costly on every switch.
         for widget in self._iter_keyboard_focus_candidates():
             if self._is_keyboard_focus_control(widget):
                 return widget
         return None
 
     def _iter_keyboard_focus_candidates(self):
+        yielded = 0
+        max_yield = 64
         try:
-            return tuple(self.content.findChildren(QWidget))
+            layout = self.vBoxLayout
         except Exception:
-            return ()
+            layout = None
+        if layout is not None:
+            try:
+                for index in range(min(layout.count(), 24)):
+                    item = layout.itemAt(index)
+                    widget = None if item is None else item.widget()
+                    if widget is None:
+                        continue
+                    yield widget
+                    yielded += 1
+                    if yielded >= max_yield:
+                        return
+                    for child in widget.findChildren(QWidget):
+                        yield child
+                        yielded += 1
+                        if yielded >= max_yield:
+                            return
+            except Exception:
+                pass
+            return
+        try:
+            children = self.content.findChildren(QWidget)
+        except Exception:
+            return
+        for widget in children[:max_yield]:
+            yield widget
 
     @staticmethod
     def _is_keyboard_focus_control(widget) -> bool:
@@ -522,7 +588,7 @@ class BasePage(_FluentScrollArea):
                     language=self._ui_language,
                     default=self._title_fallback,
                 )
-                self.title_label.setText(title_text)
+                self.title_label.setText(format_terminal_heading(title_text))
                 set_state_text(self.title_label, f"Заголовок страницы: {title_text}")
             except Exception:
                 pass
@@ -556,7 +622,13 @@ class BasePage(_FluentScrollArea):
                         language=self._ui_language,
                         default=fallback_text,
                     )
-                    text_setter(section_text)
+                    text_setter(format_terminal_heading(section_text))
                     set_state_text(label, f"Раздел страницы: {section_text}")
             except Exception:
                 pass
+        try:
+            from ui.tech_style import apply_page_header_styles
+
+            apply_page_header_styles(self)
+        except Exception:
+            pass

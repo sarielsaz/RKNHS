@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QIcon, QPixmap
-from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout
 
 from qfluentwidgets import CardWidget, FluentIcon
 
@@ -38,18 +38,19 @@ def build_mode_status_section_common(
     detecting_key: str,
     detecting_default: str,
 ):
-    status_card = CardWidget()
+    status_card = QFrame()
+    status_card.setObjectName("statusHero")
     status_layout = QHBoxLayout(status_card)
     status_layout.setContentsMargins(16, 14, 16, 14)
-    status_layout.setSpacing(16)
+    status_layout.setSpacing(14)
 
-    status_dot = PulsingDot()
-    set_state_text(status_dot, "Индикатор состояния Zapret: состояние пока не загружено")
+    status_dot = PulsingDot(size=32)
+    set_state_text(status_dot, "Индикатор состояния RKNHS: состояние пока не загружено")
     status_layout.addWidget(status_dot)
 
     status_text = QVBoxLayout()
     status_text.setContentsMargins(0, 0, 0, 0)
-    status_text.setSpacing(2)
+    status_text.setSpacing(4)
 
     status_title = strong_body_label_cls(tr_fn(checking_key, checking_default))
     status_desc = caption_label_cls(tr_fn(detecting_key, detecting_default))
@@ -59,9 +60,23 @@ def build_mode_status_section_common(
     if state_text:
         set_state_text(status_card, state_text)
     if title_text:
-        set_state_text(status_title, f"Статус Zapret: {title_text}")
+        set_state_text(status_title, f"Статус RKNHS: {title_text}")
     if desc_text:
-        set_state_text(status_desc, f"Описание состояния Zapret: {desc_text}")
+        set_state_text(status_desc, f"Описание состояния RKNHS: {desc_text}")
+
+    try:
+        from ui.theme import get_theme_tokens
+        from ui.tech_style import build_hud_caption_qss, build_status_hero_qss
+
+        tokens = get_theme_tokens()
+        status_card.setStyleSheet(build_status_hero_qss(tokens))
+        status_desc.setStyleSheet(build_hud_caption_qss(tokens))
+        status_title.setStyleSheet(
+            f"color: {tokens.fg}; font-family: {tokens.font_family_qss}; "
+            "font-size: 18px; font-weight: 600; background: transparent;"
+        )
+    except Exception:
+        pass
 
     status_text.addWidget(status_title)
     status_text.addWidget(status_desc)
@@ -139,11 +154,19 @@ def build_mode_management_section_common(
 ):
     control_card = CardWidget()
     content_layout = QVBoxLayout(control_card)
-    content_layout.setContentsMargins(16, 16, 16, 16)
-    content_layout.setSpacing(12)
+    content_layout.setContentsMargins(12, 12, 12, 12)
+    content_layout.setSpacing(10)
+
+    try:
+        from ui.theme import get_theme_tokens
+        from ui.tech_style import build_settings_card_qss
+
+        control_card.setStyleSheet(build_settings_card_qss(get_theme_tokens()))
+    except Exception:
+        pass
 
     buttons_layout = QHBoxLayout()
-    buttons_layout.setSpacing(12)
+    buttons_layout.setSpacing(10)
 
     start_text = tr_fn(start_key, start_default)
     start_btn = big_action_button_cls(
@@ -155,7 +178,17 @@ def build_mode_management_section_common(
         description="Запускает обход блокировок в выбранном режиме.",
     )
     set_state_text(start_btn, start_text)
-    start_btn.clicked.connect(on_start)
+
+    def _on_start_clicked() -> None:
+        try:
+            from ui.animation_policy import run_press_feedback
+
+            run_press_feedback(start_btn)
+        except Exception:
+            pass
+        on_start()
+
+    start_btn.clicked.connect(_on_start_clicked)
     buttons_layout.addWidget(start_btn)
 
     stop_text = tr_fn(stop_key, stop_default)
@@ -191,15 +224,15 @@ def build_mode_management_section_common(
     progress_bar.setVisible(False)
     set_control_accessibility(
         progress_bar,
-        name="Ход запуска Zapret: не выполняется",
-        description="Показывает, что запуск или остановка Zapret выполняется.",
+        name="Ход запуска RKNHS: не выполняется",
+        description="Показывает, что запуск или остановка RKNHS выполняется.",
     )
-    set_state_text(progress_bar, "Ход запуска Zapret: не выполняется")
+    set_state_text(progress_bar, "Ход запуска RKNHS: не выполняется")
     content_layout.addWidget(progress_bar)
 
     loading_label = caption_label_cls("")
     loading_label.setVisible(False)
-    set_state_text(loading_label, "Статус запуска Zapret: нет активного запуска")
+    set_state_text(loading_label, "Статус запуска RKNHS: нет активного запуска")
     content_layout.addWidget(loading_label)
 
     return control_card, start_btn, stop_winws_btn, stop_and_exit_btn, progress_bar, loading_label

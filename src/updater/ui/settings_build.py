@@ -100,7 +100,7 @@ def build_servers_settings_section(
             channel=channel,
         )
     )
-    set_state_text(version_info_label, f"Версия ZapretGUI: {_label_text(version_info_label)}")
+    set_state_text(version_info_label, f"Версия RKNHS: {_label_text(version_info_label)}")
     toggle_label = None
 
     return ServersSettingsWidgets(

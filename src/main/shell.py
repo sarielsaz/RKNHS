@@ -46,7 +46,7 @@ def shell_bootstrap(argv: list[str] | None = None) -> bool:
     args = list(argv or sys.argv)
 
     if "--version" in args:
-        ctypes.windll.user32.MessageBoxW(None, APP_VERSION, "Zapret – версия", 0x40)
+        ctypes.windll.user32.MessageBoxW(None, APP_VERSION, "RKNHS – версия", 0x40)
         sys.exit(0)
 
     if "--update" in args and len(args) > 3:
@@ -69,7 +69,7 @@ def shell_bootstrap(argv: list[str] | None = None) -> bool:
             ctypes.windll.user32.MessageBoxW(
                 None,
                 "Не удалось запросить права администратора.",
-                "Zapret",
+                "RKNHS",
                 0x10,
             )
         sys.exit(0)
@@ -77,7 +77,7 @@ def shell_bootstrap(argv: list[str] | None = None) -> bool:
     from startup.single_instance import create_mutex, release_mutex
     from startup.ipc_manager import IPCManager
 
-    mutex_handle, already_running = create_mutex("ZapretSingleInstance")
+    mutex_handle, already_running = create_mutex("RKNHSSingleInstance")
     if already_running:
         ipc = IPCManager()
         if ipc.send_show_command():
@@ -85,8 +85,8 @@ def shell_bootstrap(argv: list[str] | None = None) -> bool:
         else:
             ctypes.windll.user32.MessageBoxW(
                 None,
-                "Экземпляр Zapret уже запущен, но не удалось показать окно!",
-                "Zapret",
+                "Экземпляр RKNHS уже запущен, но не удалось показать окно!",
+                "RKNHS",
                 0x40,
             )
         sys.exit(0)

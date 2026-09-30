@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Optional, List, Dict, Any, Tuple
 from packaging import version
 from datetime import datetime
+import re
 import time
 import os
 import requests
@@ -42,7 +43,7 @@ def _get_token() -> str:
 
 GITHUB_UPDATE_1 = _get_token()
 
-GITHUB_API_URL = "https://api.github.com/repos/youtubediscord/zapret/releases"
+GITHUB_API_URL = "https://api.github.com/repos/Sazzero/RKNHS/releases"
 TIMEOUT = 10  # сек.
 
 # Кэш для GitHub запросов
@@ -234,6 +235,10 @@ def normalize_version(ver_str: str) -> str:
     if ver_str.startswith('v') or ver_str.startswith('V'):
         ver_str = ver_str[1:]
     ver_str = ver_str.strip()
+    # 21.1.0.19-local / 21.1.0.19+build → 21.1.0.19
+    match = re.match(r'^(\d+(?:\.\d+)*)(?:[-+_.].*)?$', ver_str)
+    if match:
+        ver_str = match.group(1)
     parts = ver_str.split('.')
     if len(parts) < 2:
         raise ValueError(f"Invalid version format: {ver_str}")
@@ -400,7 +405,7 @@ def get_latest_release(channel: str) -> Optional[dict]:
     try:
         if channel == "stable":
             # Для stable используем /releases/latest
-            url = "https://api.github.com/repos/youtubediscord/zapret/releases/latest"
+            url = "https://api.github.com/repos/Sazzero/RKNHS/releases/latest"
             release = _get_cached_or_fetch(url, TIMEOUT)
             
             if not release:

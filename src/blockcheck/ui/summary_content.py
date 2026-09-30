@@ -51,7 +51,7 @@ def generate_recommendations(report) -> str:
     if DPIClassification.DNS_FAKE in classifications:
         recommendations.append("DNS подменяется — используйте DoH/DoT или шифрованный DNS")
     if DPIClassification.TLS_DPI in classifications:
-        recommendations.append("TLS DPI обнаружен — включите обход DPI (zapret)")
+        recommendations.append("TLS DPI обнаружен — включите обход DPI (RKNHS)")
     if DPIClassification.TLS_MITM in classifications:
         recommendations.append("MITM прокси — проверьте сертификаты и VPN/прокси настройки")
     if DPIClassification.ISP_PAGE in classifications or DPIClassification.HTTP_INJECT in classifications:

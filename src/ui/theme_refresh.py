@@ -41,6 +41,7 @@ class ThemeRefreshBinding(QObject):
         self._applying_refresh = False
         self._last_theme_key = None
         self._cleanup_in_progress = False
+        self._style_change_coalesce_scheduled = False
 
         try:
             target.installEventFilter(self)
@@ -66,12 +67,25 @@ class ThemeRefreshBinding(QObject):
                     QEvent.Type.StyleChange,
                     QEvent.Type.PaletteChange,
                 ):
-                    self.request_refresh()
+                    # Coalesce storms of StyleChange from stylesheet writes / nav paint.
+                    if self._applying_refresh:
+                        self._pending_force = True
+                    elif not self._style_change_coalesce_scheduled:
+                        self._style_change_coalesce_scheduled = True
+                        QTimer.singleShot(16, self._coalesced_style_refresh)
                 elif event_type == QEvent.Type.Show:
-                    QTimer.singleShot(0, self.flush_pending)
+                    # Only schedule work when something is actually pending.
+                    if self._refresh_pending_when_hidden or self._pending_force:
+                        QTimer.singleShot(0, self.flush_pending)
         except Exception:
             pass
         return super().eventFilter(watched, event)
+
+    def _coalesced_style_refresh(self) -> None:
+        self._style_change_coalesce_scheduled = False
+        if self._cleanup_in_progress:
+            return
+        self.request_refresh()
 
     def invalidate(self) -> None:
         self._last_theme_key = None
@@ -221,6 +235,11 @@ def flush_pending_theme_refreshes(root) -> int:
     flushed = 0
     for binding in bindings:
         try:
+            if not (
+                bool(getattr(binding, "_refresh_pending_when_hidden", False))
+                or bool(getattr(binding, "_pending_force", False))
+            ):
+                continue
             binding.flush_pending()
             flushed += 1
         except Exception:

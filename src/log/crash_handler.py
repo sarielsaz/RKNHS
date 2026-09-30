@@ -151,27 +151,30 @@ def _save_crash_report(report: str, context: str = "crash") -> str:
 
 def _log_crash(report: str, filepath: str = None):
     """Логирует краш через основной логгер и в консоль"""
-    # Пытаемся использовать основной логгер
+    short_path = str(filepath or "").strip() or "(не сохранён)"
+    # В UI — только короткая строка; полный отчёт уже в файле.
     try:
         from log.log import log
 
-        log(f"🔴 CRASH DETECTED! Report saved to: {filepath}", "CRITICAL")
-        # Логируем первые 2000 символов отчёта
-        log(report[:2000] + ("..." if len(report) > 2000 else ""), "CRITICAL")
+        log(f"Сбой записан в лог: {short_path}", "CRITICAL")
+        log(report[:4000] + ("..." if len(report) > 4000 else ""), "DEBUG")
     except Exception:
         pass
-    
+
     # Всегда выводим в stderr
     print(report, file=sys.stderr)
-    
+    if short_path:
+        print(f"[CRASH] Saved: {short_path}", file=sys.stderr)
+
     # Также пишем в общий лог-файл
     try:
         folder = _get_crash_logs_folder().parent
         crash_log = folder / "crashes.log"
-        
-        with open(crash_log, 'a', encoding='utf-8') as f:
+
+        with open(crash_log, "a", encoding="utf-8") as f:
             f.write(f"\n{'=' * 80}\n")
             f.write(report)
+            f.write(f"\nSaved path: {short_path}\n")
     except Exception:
         pass
 

@@ -95,12 +95,16 @@ def ensure_telegram_hosts() -> tuple[bool, str]:
         return False, f"Все {len(TELEGRAM_DOMAINS)} Telegram записей в hosts актуальны"
 
     # Rebuild content: remove stale Telegram entries AND old marker comments
+    old_markers = {
+        "# --- Telegram Proxy (auto-managed by Zapret 2 GUI) ---",
+        "# --- Telegram Proxy (auto-managed by RKNHS) ---",
+    }
     lines = content.splitlines(keepends=True)
     new_lines: list[str] = []
     for line in lines:
         stripped = line.strip()
         # Remove our marker comment to avoid duplication
-        if stripped == "# --- Telegram Proxy (auto-managed by Zapret 2 GUI) ---":
+        if stripped in old_markers:
             continue
         if stripped and not stripped.startswith("#"):
             parts = stripped.split()
@@ -116,7 +120,7 @@ def ensure_telegram_hosts() -> tuple[bool, str]:
     if new_lines and not new_lines[-1].endswith("\n"):
         new_lines.append("\n")
     new_lines.append("\n")
-    new_lines.append("# --- Telegram Proxy (auto-managed by Zapret 2 GUI) ---\n")
+    new_lines.append("# --- Telegram Proxy (auto-managed by RKNHS) ---\n")
     for domain in TELEGRAM_DOMAINS:
         new_lines.append(f"{TELEGRAM_RELAY_IP} {domain}\n")
 

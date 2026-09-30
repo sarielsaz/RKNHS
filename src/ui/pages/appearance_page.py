@@ -1699,6 +1699,13 @@ class AppearancePage(BasePage):
         premium_effects: appearance_settings.AppearancePremiumEffectsPlan,
     ):
         """Update premium status — unlocks AMOLED/РКН Тян bg presets."""
+        try:
+            from app.branding import FORCE_PREMIUM_UI
+
+            if FORCE_PREMIUM_UI:
+                is_premium = True
+        except Exception:
+            pass
         was_garland_enabled = bool(self._garland_checkbox and self._garland_checkbox.isChecked())
         was_snowflakes_enabled = bool(self._snowflakes_checkbox and self._snowflakes_checkbox.isChecked())
 

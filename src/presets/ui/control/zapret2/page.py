@@ -1,5 +1,5 @@
 # dpi/ui/zapret2_mode/page.py
-"""Zapret 2 mode management page (Strategies landing for zapret2_mode)."""
+"""RKNHS mode management page (Strategies landing for zapret2_mode)."""
 
 from __future__ import annotations
 
@@ -38,6 +38,8 @@ from presets.ui.control.control_page_runtime_shared import (
 )
 from presets.ui.control.windows_features.runtime import ControlPageWindowsFeatureMixin
 from presets.ui.control.top_summary_widget import ControlTopSummaryWidget
+from presets.ui.control.service_dashboard_widget import ServiceDashboardWidget
+from presets.ui.control.desync_log_widget import DesyncLogWidget
 from presets.ui.control.refresh_runtime_state import create_refresh_runtime
 from app.ui_texts import tr as tr_catalog
 
@@ -84,7 +86,7 @@ def _log_startup_winws2_control_metric(section: str, elapsed_ms: float) -> None:
 
 
 class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMixin, BasePage):
-    """Главная страница управления для Zapret 2."""
+    """Главная страница управления для RKNHS."""
 
     def __init__(
         self,
@@ -109,12 +111,16 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         open_premium,
         create_external_open_url_worker,
         ui_state_store,
+        open_blockcheck=None,
+        open_vpn_split=None,
+        apply_light_bypass=None,
+        apply_scenario=None,
     ):
         _t_init = _time.perf_counter()
         _t_base = _time.perf_counter()
         super().__init__(
             "Управление",
-            "Настройка и запуск Zapret 2. В «Мои пресеты» выбирается пресет, "
+            "Настройка и запуск RKNHS. В «Мои пресеты» выбирается пресет, "
             "а в «Настройка пресета» меняются профили и выбранные для них готовые стратегии.",
             parent,
             title_key="page.winws2_control.title",
@@ -139,6 +145,10 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         self._open_presets_callback = open_presets
         self._open_preset_setup_callback = open_preset_setup
         self._open_premium_callback = open_premium
+        self._open_blockcheck_callback = open_blockcheck
+        self._open_vpn_split_callback = open_vpn_split
+        self._apply_light_bypass_callback = apply_light_bypass
+        self._apply_scenario_callback = apply_scenario
         self._create_external_open_url_worker = create_external_open_url_worker
         self._ui_state_store = None
         self._ui_state_unsubscribe = None
@@ -148,12 +158,20 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         self._startup_showevent_profile_logged = False
         self._refresh_runtime = create_refresh_runtime()
         self.top_summary = None
+        self.traffic_map = None
+        self.scenario_profiles = None
+        self.service_dashboard = None
+        self.desync_log = None
+        self._deferred_sections_started = False
+        self._last_known_dpi_running = False
+        self.clarity_card = None
         self.program_settings_card = None
         self.gui_autostart_toggle = None
         self.auto_dpi_toggle = None
         self.tray_close_mode_combo = None
         self.defender_toggle = None
         self.max_block_toggle = None
+        self.isp_auto_toggle = None
         self.additional_settings_section_label = None
         self.discord_restart_toggle = None
         self.wssize_toggle = None
@@ -170,6 +188,7 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         self.internet_cleanup_card = None
         self.folder_card = None
         self.docs_card = None
+        self.clarity_card = None
         self.test_btn = None
         self.internet_cleanup_btn = None
         self.folder_btn = None
@@ -296,7 +315,8 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         preset_text = str(getattr(state, "preset_text", "") or "").strip()
         summary.set_preset(
             preset_text
-            or tr_catalog("page.winws2_control.preset.not_selected", language=self._ui_language, default="Не выбран")
+            or tr_catalog("page.winws2_control.preset.not_selected", language=self._ui_language, default="Не выбран"),
+            details=str(getattr(state, "preset_details", "") or ""),
         )
         profile_count = getattr(state, "profile_count", None)
         profiles_visible_setter = getattr(summary, "set_profiles_visible", None)
@@ -314,7 +334,7 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
             return
         from log.log import log
 
-        log(f"Не удалось обновить сводку Zapret 2: {error}", "WARNING")
+        log(f"Не удалось обновить сводку RKNHS: {error}", "WARNING")
 
     def _on_top_summary_worker_finished(self, worker) -> None:
         runtime = self._refresh_runtime
@@ -382,7 +402,7 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         _t_total = _time.perf_counter()
         self.top_summary = ControlTopSummaryWidget(
             language=self._ui_language,
-            mode_value="Zapret 2",
+            mode_value="RKNHS",
             initial_icon_delay_ms=250,
             parent=self.content,
         )
@@ -433,11 +453,134 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         self.loading_label = management_widgets.loading_label
         self.add_widget(management_widgets.card)
         _log_startup_winws2_control_metric("_build_ui.control_card", (_time.perf_counter() - _t_control) * 1000)
+
+        from presets.ui.control.product_panels import schedule_deferred_control_sections
+
+        schedule_deferred_control_sections(self, self._build_deferred_sections)
+        _log_startup_winws2_control_metric("_build_ui.total", (_time.perf_counter() - _t_total) * 1000)
+
+    def _build_deferred_sections(self) -> None:
+        from presets.ui.control.product_panels import attach_product_panels
+
+        attach_product_panels(self)
+
+        self.service_dashboard = ServiceDashboardWidget(language=self._ui_language, parent=self.content)
+        self.add_widget(self.service_dashboard)
+        self.add_spacing(12)
+
+        self.desync_log = DesyncLogWidget(language=self._ui_language, parent=self.content)
+        self.add_widget(self.desync_log)
+        self.add_spacing(16)
+
+        self._build_clarity_section()
         self._build_settings_sections()
         self._attach_program_settings_runtime()
         self._schedule_additional_settings_reload(force=True)
 
-        _log_startup_winws2_control_metric("_build_ui.total", (_time.perf_counter() - _t_total) * 1000)
+    def _build_clarity_section(self) -> None:
+        from presets.ui.control.clarity_cards import build_control_clarity_cards
+        from presets.ui.control.product_panels import (
+            export_offline_lists_pack,
+            import_offline_lists_pack,
+            restore_offline_lists_pack,
+        )
+
+        cards = build_control_clarity_cards(
+            tr_fn=lambda key, default: tr_catalog(key, language=self._ui_language, default=default),
+            content_parent=self.content,
+            setting_card_group_cls=SettingCardGroup,
+            push_setting_card_cls=PushSettingCard,
+            on_open_howto=self._show_howto_dialog,
+            on_apply_light_bypass=self._apply_light_bypass,
+            on_open_blockcheck=self._open_blockcheck_callback,
+            on_open_vpn_split=self._open_vpn_split_callback,
+            on_import_lists_pack=lambda: import_offline_lists_pack(self),
+            on_restore_lists_pack=lambda: restore_offline_lists_pack(self),
+            on_export_lists_pack=lambda: export_offline_lists_pack(self),
+        )
+        self.clarity_card = cards.howto_card
+        if self.clarity_card is not None:
+            self.add_widget(self.clarity_card)
+
+    def _on_scenario_requested(self, scenario_id: str) -> None:
+        result = None
+        if callable(self._apply_scenario_callback):
+            try:
+                result = self._apply_scenario_callback(scenario_id)
+            except Exception:
+                result = None
+        if result is not None and getattr(result, "ok", False):
+            from presets.scenario_profiles import get_scenario
+
+            profile = get_scenario(getattr(result, "scenario_id", "") or scenario_id)
+            title = profile.title(language=self._ui_language) if profile else scenario_id
+            self._set_status_callback(
+                tr_catalog(
+                    "page.control.scenarios.applied",
+                    language=self._ui_language,
+                    default="Сценарий «{name}»: пресет {preset}",
+                ).format(name=title, preset=getattr(result, "preset_name", ""))
+            )
+            if self.scenario_profiles is not None:
+                self.scenario_profiles.set_active_scenario(getattr(result, "scenario_id", scenario_id))
+            self._schedule_top_summary_reload_after_preset_switch()
+            if self.traffic_map is not None:
+                self.traffic_map.refresh()
+            return
+        self._set_status_callback(
+            tr_catalog(
+                "page.control.scenarios.missing",
+                language=self._ui_language,
+                default="Не найден пресет для сценария",
+            )
+        )
+
+    def _show_howto_dialog(self) -> None:
+        try:
+            from qfluentwidgets import MessageBox
+
+            box = MessageBox(
+                tr_catalog("page.control.howto.title", language=self._ui_language, default="Как это устроено"),
+                tr_catalog(
+                    "page.control.howto.body",
+                    language=self._ui_language,
+                    default="Выберите пресет → включите обход → при проблеме Blockcheck.",
+                ),
+                self.window(),
+            )
+            box.yesButton.setText(tr_catalog("page.control.howto.open", language=self._ui_language, default="Понятно"))
+            try:
+                box.cancelButton.hide()
+            except Exception:
+                pass
+            box.exec()
+        except Exception:
+            pass
+
+    def _apply_light_bypass(self) -> None:
+        chosen = None
+        if callable(self._apply_light_bypass_callback):
+            try:
+                chosen = self._apply_light_bypass_callback()
+            except Exception:
+                chosen = None
+        if chosen:
+            self._set_status_callback(
+                tr_catalog(
+                    "page.control.light_bypass.done",
+                    language=self._ui_language,
+                    default="Выбран лёгкий пресет: {name}",
+                ).format(name=chosen)
+            )
+            self._request_top_summary_worker()
+        else:
+            self._set_status_callback(
+                tr_catalog(
+                    "page.control.light_bypass.missing",
+                    language=self._ui_language,
+                    default="Не найден подходящий лёгкий пресет",
+                )
+            )
 
     def _build_settings_sections(self) -> None:
         self.add_spacing(8)
@@ -466,6 +609,7 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
             on_open_internet_cleanup=self._on_internet_cleanup_clicked,
             on_open_folder=self._open_folder,
             on_open_docs=self._open_docs,
+            on_isp_auto_toggled=self._on_isp_auto_toggled,
         )
 
         self.program_settings_section_label = section_widgets.program_settings_section_label
@@ -475,9 +619,11 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         self.tray_close_mode_combo = section_widgets.tray_close_mode_combo
         self.defender_toggle = section_widgets.defender_toggle
         self.max_block_toggle = section_widgets.max_block_toggle
+        self.isp_auto_toggle = section_widgets.isp_auto_toggle
         self.add_spacing(8)
         self.add_spacing(16)
         self.add_widget(self.program_settings_card)
+        self._sync_isp_auto_toggle()
 
         self.additional_settings_section_label = None
         self.discord_restart_toggle = section_widgets.discord_restart_toggle
@@ -511,7 +657,7 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         self.test_btn = self.test_card.button
         self.internet_cleanup_btn = self.internet_cleanup_card.button
         self.folder_btn = self.folder_card.button
-        self.docs_btn = self.docs_card.button
+        self.docs_btn = self.docs_card.button if self.docs_card is not None else None
         self.add_widget(self.extra_card)
 
     def _apply_additional_settings_state(self, plan) -> None:
@@ -912,6 +1058,7 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
             last_error=last_error,
             language=self._ui_language,
         )
+        self._last_known_dpi_running = plan.phase == "running"
         apply_status_plan(
             plan,
             status_title=self.status_title,
@@ -922,6 +1069,9 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
             stop_and_exit_btn=self.stop_and_exit_btn,
             update_stop_button_text=self._update_stop_winws_button_text,
         )
+        traffic_map = getattr(self, "traffic_map", None)
+        if traffic_map is not None:
+            traffic_map.set_dpi_running(self._last_known_dpi_running)
 
     def update_strategy(self, name: str):
         _ = name
@@ -932,6 +1082,10 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
         if self.top_summary is not None:
             self.top_summary.set_language(self._ui_language)
             self._refresh_top_summary()
+        if getattr(self, "traffic_map", None) is not None:
+            self.traffic_map.set_language(self._ui_language)
+        if getattr(self, "scenario_profiles", None) is not None:
+            self.scenario_profiles.set_language(self._ui_language)
         if self.last_status_message_title is not None:
             self.last_status_message_title.setText(
                 tr_catalog(
@@ -971,6 +1125,25 @@ class Zapret2ModeControlPage(ControlPageWindowsFeatureMixin, ControlPageActionMi
             error_title="Документация",
             error_default="Не удалось открыть документацию: {error}",
         )
+
+    def _sync_isp_auto_toggle(self) -> None:
+        toggle = getattr(self, "isp_auto_toggle", None)
+        if toggle is None:
+            return
+        try:
+            from settings.store import get_isp_auto_preset_enabled
+
+            set_toggle_checked(toggle, bool(get_isp_auto_preset_enabled()))
+        except Exception:
+            pass
+
+    def _on_isp_auto_toggled(self, checked: bool) -> None:
+        try:
+            from settings.store import set_isp_auto_preset_enabled
+
+            set_isp_auto_preset_enabled(bool(checked))
+        except Exception:
+            pass
 
     def cleanup(self) -> None:
         self._cleanup_in_progress = True

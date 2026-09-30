@@ -28,7 +28,7 @@ class WssRoute:
         return (self.hostname, self.media_hostname)
 
 
-# Telegram's working WebSocket relay IP found in ZapretGUI, Flowseal
+# Telegram's working WebSocket relay IP found in RKNHS, Flowseal
 # tg-ws-proxy, and the decrypted GhostWire 1.0.13 config.
 WSS_RELAY_IP = "149.154.167.220"
 WSS_PATH = "/apiws"
@@ -44,7 +44,7 @@ WSS_ROUTES: tuple[WssRoute, ...] = (
         media_hostname="kws2-1.web.telegram.org",
         relay_ip=WSS_RELAY_IP,
         status=RouteStatus.STABLE,
-        source="ZapretGUI + Flowseal tg-ws-proxy",
+        source="RKNHS + Flowseal tg-ws-proxy",
         note="Stable on 2026-06-14: repeated /apiws WebSocket Upgrade returned HTTP 101.",
     ),
     WssRoute(
@@ -53,7 +53,7 @@ WSS_ROUTES: tuple[WssRoute, ...] = (
         media_hostname="kws4-1.web.telegram.org",
         relay_ip=WSS_RELAY_IP,
         status=RouteStatus.STABLE,
-        source="ZapretGUI + Flowseal tg-ws-proxy",
+        source="RKNHS + Flowseal tg-ws-proxy",
         note="Stable on 2026-06-14: repeated /apiws WebSocket Upgrade returned HTTP 101.",
     ),
     WssRoute(

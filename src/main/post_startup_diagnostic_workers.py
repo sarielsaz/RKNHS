@@ -88,6 +88,20 @@ def build_global_exception_handler() -> Callable[[type[BaseException], BaseExcep
             except Exception:
                 base_error = f"{getattr(exctype, '__name__', exctype)}: {value!r}"
             error_msg = f"{base_error}\n[traceback formatting failed: {format_error!r}]"
-        log(f"UNCAUGHT EXCEPTION: {error_msg}", level="❌ CRITICAL")
+
+        try:
+            from log.crash_handler import _format_crash_report, _save_crash_report
+
+            report = _format_crash_report(exctype, value, tb_obj, "Python Main Thread")
+            filepath = _save_crash_report(report, "python")
+        except Exception:
+            filepath = ""
+
+        short = f"{getattr(exctype, '__name__', exctype)}: {value}"
+        if filepath:
+            log(f"UNCAUGHT EXCEPTION: {short} | лог: {filepath}", level="❌ CRITICAL")
+        else:
+            log(f"UNCAUGHT EXCEPTION: {short}", level="❌ CRITICAL")
+        log(error_msg, level="DEBUG")
 
     return _global_exception_handler

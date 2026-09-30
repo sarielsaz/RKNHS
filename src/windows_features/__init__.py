@@ -1,1 +1,1 @@
-"""Служебные Windows-функции ZapretGUI."""
+"""Служебные Windows-функции RKNHS."""

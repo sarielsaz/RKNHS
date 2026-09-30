@@ -18,6 +18,7 @@ class Zapret2SettingsBuildWidgets:
     tray_close_mode_combo: object
     defender_toggle: object
     max_block_toggle: object
+    isp_auto_toggle: object | None
     additional_settings_card: object
     additional_settings_notice: object
     discord_restart_toggle: object | None
@@ -52,6 +53,7 @@ def build_winws2_pages_settings_sections(
     on_open_internet_cleanup,
     on_open_folder,
     on_open_docs,
+    on_isp_auto_toggled=None,
 ) -> Zapret2SettingsBuildWidgets:
     program_settings_title = tr_fn("page.winws2_control.section.program_settings", "Настройки программы")
     program_settings_section_label = None
@@ -59,7 +61,7 @@ def build_winws2_pages_settings_sections(
 
     gui_autostart_toggle = win11_toggle_row_cls(
         "fa5s.power-off",
-        tr_fn("page.control.setting.gui_autostart.title", "Автозапуск ZapretGUI"),
+        tr_fn("page.control.setting.gui_autostart.title", "Автозапуск RKNHS"),
         tr_fn("page.control.setting.gui_autostart.desc", "Запускать программу в трее при входе в Windows"),
     )
     gui_autostart_toggle.toggled.connect(on_gui_autostart_toggled)
@@ -67,14 +69,14 @@ def build_winws2_pages_settings_sections(
     auto_dpi_toggle = win11_toggle_row_cls(
         "fa5s.bolt",
         tr_fn("page.winws2_control.setting.autostart.title", "Автозапуск DPI после старта программы"),
-        tr_fn("page.winws2_control.setting.autostart.desc", "После запуска ZapretGUI автоматически запускать текущий DPI-режим"),
+        tr_fn("page.winws2_control.setting.autostart.desc", "После запуска RKNHS автоматически запускать текущий DPI-режим"),
     )
     auto_dpi_toggle.toggled.connect(on_auto_dpi_toggled)
 
     tray_close_mode_combo = win11_combo_row_cls(
         "fa5s.window-minimize",
         tr_fn("page.control.setting.tray_close_mode.title", "Поведение окна и трея"),
-        tr_fn("page.control.setting.tray_close_mode.desc", "Выберите, когда ZapretGUI будет скрывать окно в системный трей"),
+        tr_fn("page.control.setting.tray_close_mode.desc", "Выберите, когда RKNHS будет скрывать окно в системный трей"),
         items=[
             ("Свернуть и крестик скрывают в трей", "minimize_and_close"),
             ("Только свернуть скрывает в трей", "minimize_only"),
@@ -98,6 +100,20 @@ def build_winws2_pages_settings_sections(
     program_settings_card.addSettingCard(tray_close_mode_combo)
     program_settings_card.addSettingCard(windows_feature_toggles.defender_toggle)
     program_settings_card.addSettingCard(windows_feature_toggles.max_block_toggle)
+
+    isp_auto_toggle = win11_toggle_row_cls(
+        "fa5s.broadcast-tower",
+        tr_fn("page.control.isp_auto.title", "Автопресет по провайдеру"),
+        tr_fn(
+            "page.control.isp_auto.desc",
+            "При первом запуске подобрать пресет под провайдера (Ростелеком / МГТС / Дом.ру)",
+        ),
+    )
+    if callable(on_isp_auto_toggled):
+        isp_auto_toggle.toggled.connect(on_isp_auto_toggled)
+        program_settings_card.addSettingCard(isp_auto_toggle)
+    else:
+        isp_auto_toggle = None
 
     enable_setting_card_group_auto_height(program_settings_card)
 
@@ -187,21 +203,29 @@ def build_winws2_pages_settings_sections(
         button_accessible_name=tr_fn("page.winws2_control.button.open_folder.accessible_name", "Открыть папку программы"),
         parent=content_parent,
     )
-    docs_card = build_deferred_themed_push_setting_card_common(
-        push_setting_card_cls=push_setting_card_cls,
-        button_text=tr_fn("page.winws2_control.button.open", "Открыть"),
-        icon_name="fa5s.book",
-        icon_color="#8ab4f8",
-        title_text=tr_fn("page.winws2_control.button.documentation", "Документация"),
-        content_text=tr_fn("page.winws2_control.button.documentation.desc", "Открыть справку и описание возможностей"),
-        on_click=on_open_docs,
-        button_accessible_name=tr_fn("page.winws2_control.button.documentation.accessible_name", "Открыть документацию"),
-        parent=content_parent,
-    )
     extra_card.addSettingCard(test_card)
     extra_card.addSettingCard(internet_cleanup_card)
     extra_card.addSettingCard(folder_card)
-    extra_card.addSettingCard(docs_card)
+    docs_card = None
+    try:
+        from app.branding import HIDE_EXTERNAL_LINKS
+
+        hide_docs = bool(HIDE_EXTERNAL_LINKS)
+    except Exception:
+        hide_docs = False
+    if not hide_docs:
+        docs_card = build_deferred_themed_push_setting_card_common(
+            push_setting_card_cls=push_setting_card_cls,
+            button_text=tr_fn("page.winws2_control.button.open", "Открыть"),
+            icon_name="fa5s.book",
+            icon_color="#8ab4f8",
+            title_text=tr_fn("page.winws2_control.button.documentation", "Документация"),
+            content_text=tr_fn("page.winws2_control.button.documentation.desc", "Открыть справку и описание возможностей"),
+            on_click=on_open_docs,
+            button_accessible_name=tr_fn("page.winws2_control.button.documentation.accessible_name", "Открыть документацию"),
+            parent=content_parent,
+        )
+        extra_card.addSettingCard(docs_card)
     enable_setting_card_group_auto_height(extra_card)
 
     return Zapret2SettingsBuildWidgets(
@@ -212,6 +236,7 @@ def build_winws2_pages_settings_sections(
         tray_close_mode_combo=tray_close_mode_combo,
         defender_toggle=windows_feature_toggles.defender_toggle,
         max_block_toggle=windows_feature_toggles.max_block_toggle,
+        isp_auto_toggle=isp_auto_toggle,
         additional_settings_card=additional_settings_card,
         additional_settings_notice=additional_settings_notice,
         discord_restart_toggle=discord_restart_toggle,

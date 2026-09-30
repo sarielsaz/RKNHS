@@ -332,8 +332,8 @@ class HostsStatusAccessibilityTests(unittest.TestCase):
             HostsPage._on_clear_clicked(page)
 
         dialog = _MessageBox.instances[0]
-        self.assertEqual(dialog.yesButton.accessibleName(), "Очистить записи ZapretGUI из hosts")
-        self.assertIn("Будет удалён только блок записей ZapretGUI", dialog.yesButton.accessibleDescription())
+        self.assertEqual(dialog.yesButton.accessibleName(), "Очистить записи RKNHS из hosts")
+        self.assertIn("Будет удалён только блок записей RKNHS", dialog.yesButton.accessibleDescription())
         self.assertEqual(dialog.cancelButton.accessibleName(), "Отменить очистку hosts")
         self.assertTrue(dialog.exec_called)
         page._clear_hosts.assert_not_called()

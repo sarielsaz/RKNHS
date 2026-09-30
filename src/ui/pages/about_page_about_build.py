@@ -9,15 +9,12 @@ from PyQt6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout
 
 from ui.accessibility import set_state_text
 from ui.pages.about_page_accessibility import apply_about_buttons_accessibility
-from ui.pages.about_page_help_accessibility import set_help_card_accessibility as set_link_card_accessibility
 from ui.fluent_widgets import SettingsCard
 from qfluentwidgets import (
     CaptionLabel,
     FluentIcon,
-    HyperlinkCard,
     PrimaryPushButton,
     PushButton,
-    SettingCardGroup,
     StrongBodyLabel,
     SubtitleLabel,
 )
@@ -38,6 +35,13 @@ class AboutPageAboutWidgets:
     course_group: object
     youtube_course_card: object
     youtube_playlist_card: object
+    legacy_docs_group: object | None = None
+    legacy_course_group: object | None = None
+    license_card: object | None = None
+    license_status_label: object | None = None
+    license_key_edit: object | None = None
+    license_machine_id_label: object | None = None
+    license_deactivate_btn: object | None = None
 
 
 def set_subscription_status_accessibility(label, text: object) -> None:
@@ -73,6 +77,12 @@ def build_about_page_about_content(
     make_section_label: Callable[[str], object],
     on_open_updates,
     on_open_premium,
+    on_activate_license=None,
+    on_deactivate_license=None,
+    on_copy_machine_id=None,
+    license_machine_id: str = "",
+    license_status_text: str = "",
+    license_status_valid: bool = False,
 ) -> AboutPageAboutWidgets:
     about_section_version_label = make_section_label(
         tr_fn("page.about.section.version", "Версия")
@@ -90,7 +100,7 @@ def build_about_page_about_content(
 
     text_layout = QVBoxLayout()
     text_layout.setSpacing(2)
-    app_name_text = tr_fn("page.about.app_name", "Zapret 2 GUI")
+    app_name_text = tr_fn("page.about.app_name", "RKNHS")
     about_app_name_label = SubtitleLabel(app_name_text)
     about_version_value_label = CaptionLabel(
         tr_fn("page.about.version.value_template", "Версия {version}").format(version=app_version)
@@ -115,99 +125,127 @@ def build_about_page_about_content(
 
     version_card.add_layout(version_layout)
     layout.addWidget(version_card)
-    layout.addSpacing(16)
 
-    about_section_subscription_label = make_section_label(
-        tr_fn("page.about.section.subscription", "Подписка")
-    )
-    layout.addWidget(about_section_subscription_label)
+    license_card = None
+    license_status_label = None
+    license_key_edit = None
+    license_machine_id_label = None
+    license_deactivate_btn = None
+    if callable(on_activate_license) and callable(on_deactivate_license) and callable(on_copy_machine_id):
+        from ui.pages.about_page_license_build import build_about_page_license_content
 
-    sub_card = SettingsCard()
-    sub_layout = QVBoxLayout()
-    sub_layout.setSpacing(12)
-
-    sub_status_layout = QHBoxLayout()
-    sub_status_layout.setSpacing(8)
-
-    sub_status_icon = QLabel()
-    sub_status_icon.setPixmap(get_cached_qta_pixmap('fa5s.user', color=tokens.fg_faint, size=18))
-    sub_status_icon.setFixedSize(22, 22)
-    sub_status_layout.addWidget(sub_status_icon)
-
-    sub_status_label = StrongBodyLabel(
-        tr_fn("page.about.subscription.free", "Free версия")
-    )
-    set_subscription_status_accessibility(sub_status_label, sub_status_label.text())
-    sub_status_layout.addWidget(sub_status_label, 1)
-    sub_layout.addLayout(sub_status_layout)
-
-    sub_desc_label = CaptionLabel(
-        tr_fn(
-            "page.about.subscription.desc",
-            "Подписка Zapret Premium открывает доступ к дополнительным темам, приоритетной поддержке и VPN-сервису.",
+        license_widgets = build_about_page_license_content(
+            layout,
+            tr_fn=tr_fn,
+            content_parent=content_parent,
+            machine_id=license_machine_id,
+            status_text=license_status_text,
+            status_valid=license_status_valid,
+            on_activate=on_activate_license,
+            on_deactivate=on_deactivate_license,
+            on_copy_machine_id=on_copy_machine_id,
         )
-    )
-    sub_desc_label.setWordWrap(True)
-    set_subscription_description_accessibility(sub_desc_label, sub_desc_label.text())
-    sub_layout.addWidget(sub_desc_label)
+        license_card = license_widgets.license_card
+        license_status_label = license_widgets.status_label
+        license_key_edit = license_widgets.key_edit
+        license_machine_id_label = license_widgets.machine_id_label
+        license_deactivate_btn = license_widgets.deactivate_btn
 
-    sub_btns = QHBoxLayout()
-    sub_btns.setSpacing(8)
-    premium_btn = PrimaryPushButton(
-        tr_fn("page.about.button.premium_vpn", "Premium и VPN"),
-        icon=FluentIcon.HEART,
-    )
-    apply_about_buttons_accessibility(tr_fn=tr_fn, premium_btn=premium_btn)
-    premium_btn.clicked.connect(on_open_premium)
-    sub_btns.addWidget(premium_btn)
-    sub_btns.addStretch()
-    sub_layout.addLayout(sub_btns)
+    try:
+        from app.branding import FORK_DESCRIPTION, HIDE_EXTERNAL_LINKS
 
-    sub_card.add_layout(sub_layout)
-    layout.addWidget(sub_card)
+        if HIDE_EXTERNAL_LINKS:
+            fork_label = CaptionLabel(FORK_DESCRIPTION, content_parent)
+            fork_label.setWordWrap(True)
+            layout.addWidget(fork_label)
+    except Exception:
+        pass
+
     layout.addSpacing(16)
 
-    course_title = tr_fn("page.about.course.group", "Обучение")
-    course_group = SettingCardGroup(
-        course_title,
-        content_parent,
-    )
-    set_state_text(course_group, f"Раздел о программе: {course_title}")
+    hide_donate_nav = False
+    try:
+        from app.branding import HIDE_DONATE_NAV
 
-    youtube_course_card = HyperlinkCard(
-        "https://www.youtube.com/@%D0%9F%D1%80%D0%B8%D0%B2%D0%B0%D1%82%D0%BD%D0%BE%D1%81%D1%82%D1%8C/videos",
-        tr_fn("page.about.button.open", "Открыть"),
-        FluentIcon.PLAY,
-        tr_fn("page.about.course.youtube.title", "Курс и гайд по Zapret 2"),
-        tr_fn("page.about.course.youtube.desc", "Видео по настройке и пониманию Zapret 2"),
-    )
-    set_link_card_accessibility(
-        youtube_course_card,
-        action_name=tr_fn(
-            "page.about.course.youtube.accessible_name",
-            "Открыть курс и гайд по Zapret 2",
-        ),
-        description=tr_fn("page.about.course.youtube.desc", "Видео по настройке и пониманию Zapret 2"),
-    )
+        hide_donate_nav = bool(HIDE_DONATE_NAV)
+    except Exception:
+        hide_donate_nav = False
 
-    youtube_playlist_card = HyperlinkCard(
-        "https://www.youtube.com/playlist?list=PLa6yzOvgEWW0F1PL0D8pOPI8lD_rfLL1s",
-        tr_fn("page.about.button.open", "Открыть"),
-        FluentIcon.PLAY,
-        tr_fn("page.about.course.youtube_playlist.title", "Плейлист курса по Zapret 2"),
-        tr_fn("page.about.course.youtube_playlist.desc", "Все видео курса одним списком"),
-    )
-    set_link_card_accessibility(
-        youtube_playlist_card,
-        action_name=tr_fn(
-            "page.about.course.youtube_playlist.accessible_name",
-            "Открыть плейлист курса по Zapret 2",
-        ),
-        description=tr_fn("page.about.course.youtube_playlist.desc", "Все видео курса одним списком"),
-    )
+    about_section_subscription_label = None
+    sub_status_icon = None
+    sub_status_label = None
+    sub_desc_label = None
+    premium_btn = None
 
-    course_group.addSettingCards([youtube_course_card, youtube_playlist_card])
-    layout.addWidget(course_group)
+    if not hide_donate_nav:
+        about_section_subscription_label = make_section_label(
+            tr_fn("page.about.section.subscription", "Подписка")
+        )
+        layout.addWidget(about_section_subscription_label)
+
+        sub_card = SettingsCard()
+        sub_layout = QVBoxLayout()
+        sub_layout.setSpacing(12)
+
+        sub_status_layout = QHBoxLayout()
+        sub_status_layout.setSpacing(8)
+
+        sub_status_icon = QLabel()
+        sub_status_icon.setPixmap(get_cached_qta_pixmap('fa5s.user', color=tokens.fg_faint, size=18))
+        sub_status_icon.setFixedSize(22, 22)
+        sub_status_layout.addWidget(sub_status_icon)
+
+        sub_status_label = StrongBodyLabel(
+            tr_fn("page.about.subscription.free", "Free версия")
+        )
+        set_subscription_status_accessibility(sub_status_label, sub_status_label.text())
+        sub_status_layout.addWidget(sub_status_label, 1)
+        sub_layout.addLayout(sub_status_layout)
+
+        sub_desc_label = CaptionLabel(
+            tr_fn(
+                "page.about.subscription.desc",
+                "Подписка RKNHS Premium открывает доступ к дополнительным темам и приоритетной поддержке.",
+            )
+        )
+        sub_desc_label.setWordWrap(True)
+        set_subscription_description_accessibility(sub_desc_label, sub_desc_label.text())
+        sub_layout.addWidget(sub_desc_label)
+
+        sub_btns = QHBoxLayout()
+        sub_btns.setSpacing(8)
+        premium_btn = PrimaryPushButton(
+            tr_fn("page.about.button.premium_vpn", "Premium"),
+            icon=FluentIcon.HEART,
+        )
+        apply_about_buttons_accessibility(tr_fn=tr_fn, premium_btn=premium_btn)
+        premium_btn.clicked.connect(on_open_premium)
+        sub_btns.addWidget(premium_btn)
+        sub_btns.addStretch()
+        sub_layout.addLayout(sub_btns)
+
+        sub_card.add_layout(sub_layout)
+        layout.addWidget(sub_card)
+        layout.addSpacing(16)
+
+    # In-app preset mental model (not upstream external links).
+    course_group = None
+    youtube_course_card = None
+    youtube_playlist_card = None
+    legacy_docs_group = None
+    legacy_course_group = None
+    try:
+        from ui.pages.about_page_legacy_docs_build import build_about_page_legacy_docs_content
+
+        legacy = build_about_page_legacy_docs_content(
+            layout,
+            tr_fn=tr_fn,
+            content_parent=content_parent,
+        )
+        legacy_docs_group = legacy.legacy_docs_group
+        legacy_course_group = legacy.legacy_course_group
+    except Exception:
+        pass
 
     return AboutPageAboutWidgets(
         about_section_version_label=about_section_version_label,
@@ -222,4 +260,11 @@ def build_about_page_about_content(
         course_group=course_group,
         youtube_course_card=youtube_course_card,
         youtube_playlist_card=youtube_playlist_card,
+        legacy_docs_group=legacy_docs_group,
+        legacy_course_group=legacy_course_group,
+        license_card=license_card,
+        license_status_label=license_status_label,
+        license_key_edit=license_key_edit,
+        license_machine_id_label=license_machine_id_label,
+        license_deactivate_btn=license_deactivate_btn,
     )

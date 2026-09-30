@@ -228,7 +228,7 @@ class QuickActionsBarLayoutTests(unittest.TestCase):
             Win11ToggleRow(
                 "fa5s.bolt",
                 "Автозапуск DPI после старта программы",
-                "После запуска ZapretGUI автоматически запускать текущий DPI-режим",
+                "После запуска RKNHS автоматически запускать текущий DPI-режим",
             ),
             Win11ToggleRow(
                 "fa5s.shield-alt",

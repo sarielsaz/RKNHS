@@ -360,7 +360,7 @@ def reset_sidebar_search_keyboard_selection(window) -> None:
     widget = session.sidebar_search_nav_widget
     set_text = getattr(widget, "set_keyboard_result_text", None)
     if callable(set_text):
-        set_text("Глобальный поиск по ZapretGUI")
+        set_text("Глобальный поиск по RKNHS")
 
 
 def _sidebar_search_model_row_count(model) -> int:

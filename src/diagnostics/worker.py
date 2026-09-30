@@ -116,7 +116,7 @@ class ConnectionTestWorker(QObject):
                     self.log_message("   • Альтернативный: 1.1.1.1 (Cloudflare)")
                 
                 self.log_message("")
-                self.log_message("2. После смены DNS перезапустите Zapret")
+                self.log_message("2. После смены DNS перезапустите RKNHS")
                 self.log_message("3. Очистите кэш DNS командой: ipconfig /flushdns")
             
         except Exception as e:
@@ -391,13 +391,13 @@ class ConnectionTestWorker(QObject):
             self.log_message("   • TCP соединение работает, но TLS блокируется")
             self.log_message("   • DPI система активна и блокирует HTTPS")
             self.log_message("")
-            self.log_message("🛠️ ТРЕБУЕТСЯ ЗАПУСК ZAPRET:")
-            self.log_message("   1. ✅ Убедитесь что Zapret запущен")
+            self.log_message("🛠️ ТРЕБУЕТСЯ ЗАПУСК RKNHS:")
+            self.log_message("   1. ✅ Убедитесь что RKNHS запущен")
             self.log_message("   2. ✅ Проверьте что выбрана рабочая стратегия")
-            self.log_message("   3. ✅ Дождитесь полной инициализации Zapret")
+            self.log_message("   3. ✅ Дождитесь полной инициализации RKNHS")
             self.log_message("   4. ✅ Повторите тест через 30-60 секунд")
             self.log_message("")
-            self.log_message("⚠️ БЕЗ ZAPRET YOUTUBE НЕ БУДЕТ РАБОТАТЬ!")
+            self.log_message("⚠️ БЕЗ RKNHS YOUTUBE НЕ БУДЕТ РАБОТАТЬ!")
             
         else:
             self.log_message("🎉 ОТЛИЧНЫЕ НОВОСТИ!")
@@ -435,9 +435,9 @@ class ConnectionTestWorker(QObject):
         return False
 
     def check_zapret_status(self):
-        """Проверяет статус Zapret"""
+        """Проверяет статус RKNHS"""
         self.log_message("=" * 40)
-        self.log_message("🔍 ПРОВЕРКА СТАТУСА ZAPRET:")
+        self.log_message("🔍 ПРОВЕРКА СТАТУСА RKNHS:")
         self.log_message("=" * 40)
         
         try:
@@ -464,10 +464,10 @@ class ConnectionTestWorker(QObject):
 
             if not winws_found:
                 self.log_message(f"❌ Процессы {EXE_NAME_WINWS1} и {EXE_NAME_WINWS2} НЕ запущены")
-                self.log_message("   Zapret не работает!")
+                self.log_message("   RKNHS не работает!")
 
         except Exception as e:
-            self.log_message(f"❌ Ошибка проверки Zapret: {e}")
+            self.log_message(f"❌ Ошибка проверки RKNHS: {e}")
             
         self.log_message("")
 

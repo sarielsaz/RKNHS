@@ -14,6 +14,7 @@ class TrayFeature:
     _deps: Any
     _runtime_feature: Any
     _telegram_proxy_feature: Any
+    _presets_feature: Any = None
     _notify: Any = None
     _log_startup_metric: Any = None
     _tray_manager: Any = None
@@ -43,7 +44,14 @@ class TrayFeature:
         icon_path = commands.resolve_tray_icon_path()
         self._deps.window_port.set_application_icon_from_path(icon_path)
         from config.build_info import APP_VERSION
-        from tray import SystemTrayManager
+
+        try:
+            from tray import SystemTrayManager
+        except Exception as exc:
+            from log.log import log
+
+            log(f"Не удалось загрузить модуль системного трея: {exc}", "WARNING")
+            return None
 
         self._tray_manager = commands.init_tray(
             window_port=self._deps.window_port,
@@ -56,6 +64,10 @@ class TrayFeature:
             log_startup_metric=self._log_startup_metric,
             existing_manager=self._tray_manager,
         )
+        try:
+            self._tray_manager.install_status_polling()
+        except Exception:
+            pass
         return self._tray_manager
 
     def ensure_initialized(self) -> bool:
@@ -123,6 +135,52 @@ class TrayFeature:
             return running, phase or ("running" if running else "stopped")
         except Exception:
             return False, "stopped"
+
+    def start_bypass(self) -> bool:
+        try:
+            return bool(self._runtime_feature.start(skip_conflict_prompt=True))
+        except Exception:
+            return False
+
+    def stop_bypass(self) -> bool:
+        try:
+            return bool(self._runtime_feature.stop(force_cleanup=False, cleanup_services=False))
+        except Exception:
+            return False
+
+    def apply_light_scope(self) -> str | None:
+        if self._presets_feature is None:
+            return None
+        try:
+            from presets.scope_actions import apply_light_bypass
+            from settings.dpi.strategy_settings import get_strategy_launch_method
+
+            chosen = apply_light_bypass(self._presets_feature, get_strategy_launch_method())
+            if chosen and self.launch_state()[0]:
+                try:
+                    self._runtime_feature.restart(force_full_stop=False)
+                except Exception:
+                    pass
+            return chosen
+        except Exception:
+            return None
+
+    def apply_wide_scope(self) -> str | None:
+        if self._presets_feature is None:
+            return None
+        try:
+            from presets.scope_actions import apply_wide_bypass
+            from settings.dpi.strategy_settings import get_strategy_launch_method
+
+            chosen = apply_wide_bypass(self._presets_feature, get_strategy_launch_method())
+            if chosen and self.launch_state()[0]:
+                try:
+                    self._runtime_feature.restart(force_full_stop=False)
+                except Exception:
+                    pass
+            return chosen
+        except Exception:
+            return None
 
     def telegram_proxy_label(self) -> str:
         return str(self._telegram_proxy_feature.status_label())
@@ -329,9 +387,10 @@ class TrayFeature:
         self._opacity_save_state_obj().start_scheduled = bool(value)
 
 
-def build_tray_feature(*, deps, runtime_feature, telegram_proxy_feature) -> TrayFeature:
+def build_tray_feature(*, deps, runtime_feature, telegram_proxy_feature, presets_feature=None) -> TrayFeature:
     return TrayFeature(
         _deps=deps,
         _runtime_feature=runtime_feature,
         _telegram_proxy_feature=telegram_proxy_feature,
+        _presets_feature=presets_feature,
     )

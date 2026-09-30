@@ -115,6 +115,58 @@ def apply_wssize_parameter(args: list) -> list:
     return new_args
 
 
+def should_apply_vpn_ipset_exclude(lists_dir: str) -> bool:
+    """VPN Split включён, туннель активен и ipset-файл существует."""
+    try:
+        from settings.store import get_vpn_split_enabled
+        from vpn_split.tunnel import is_vpn_tunnel_active
+    except Exception:
+        return False
+
+    if not get_vpn_split_enabled():
+        return False
+    if not is_vpn_tunnel_active():
+        return False
+
+    vpn_file = os.path.join(lists_dir, "ipset-vpn.txt")
+    return os.path.isfile(vpn_file)
+
+
+def apply_vpn_ipset_exclude(args: list, lists_dir: str) -> list:
+    """Добавляет --ipset-exclude только когда VPN-туннель реально подключён."""
+    if not should_apply_vpn_ipset_exclude(lists_dir):
+        return args
+
+    exclude_arg = "--ipset-exclude=lists/ipset-vpn.txt"
+    if exclude_arg in args:
+        return args
+
+    output: list[str] = []
+    block: list[str] = []
+
+    def flush_block() -> None:
+        nonlocal block
+        if not block:
+            return
+        if any(item.startswith("--ipset-exclude=") for item in block):
+            merged = list(block)
+            if exclude_arg not in merged:
+                merged.append(exclude_arg)
+            output.extend(merged)
+        else:
+            output.extend(block)
+        block = []
+
+    for arg in args:
+        if arg == "--new":
+            flush_block()
+            output.append("--new")
+        else:
+            block.append(arg)
+    flush_block()
+    return output
+
+
 def ensure_list_files_exist(args: list, lists_dir: str) -> list:
     """
     Проверяет и создаёт недостающие файлы hostlist/ipset
@@ -195,7 +247,10 @@ def apply_all_filters(args: list, lists_dir: str) -> list:
     # 0. Создаём недостающие файлы списков
     args = ensure_list_files_exist(args, lists_dir)
 
-    # 1. Применяем wssize параметры (если включено)
+    # 1. Исключаем VPN-маршруты из DPI (если VPN Split включён)
+    args = apply_vpn_ipset_exclude(args, lists_dir)
+
+    # 2. Применяем wssize параметры (если включено)
     args = apply_wssize_parameter(args)
 
     return args

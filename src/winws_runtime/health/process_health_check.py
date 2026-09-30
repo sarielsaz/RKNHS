@@ -1223,6 +1223,6 @@ def _fix_cleanup_driver() -> Tuple[bool, str]:
         ok = aggressive_windivert_cleanup_runtime()
         if ok:
             return True, "Драйвер WinDivert очищен через WinAPI. Попробуйте запустить снова"
-        return False, "Не удалось полностью очистить драйвер WinDivert. Закройте ZapretGUI и запустите от администратора"
+        return False, "Не удалось полностью очистить драйвер WinDivert. Закройте RKNHS и запустите от администратора"
     except Exception as e:
         return False, f"Ошибка очистки драйвера WinDivert: {e}"

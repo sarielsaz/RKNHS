@@ -112,6 +112,7 @@ class PostStartupDeps:
     startup_lists_check: Any
     apply_dns_on_startup_async: Any
     install_tray_post_startup: Any
+    runtime_feature: Any = None
     updater_feature: Any
     hosts_feature: Any = None
     premium_feature: Any = None
@@ -161,6 +162,13 @@ def install_post_startup_tasks(deps: PostStartupDeps) -> None:
         set_status=deps.set_status,
         log_startup_metric=deps.log_startup_metric,
     )
+    from main.post_startup_isp_preset import install_isp_auto_preset
+
+    install_isp_auto_preset(
+        startup_host,
+        log_startup_metric=deps.log_startup_metric,
+        notify=deps.notify,
+    )
     install_dns_page_data_warmup(
         startup_host,
         dns_feature=deps.dns_feature,
@@ -191,6 +199,14 @@ def install_post_startup_tasks(deps: PostStartupDeps) -> None:
             log_startup_metric=deps.log_startup_metric,
         )
     deps.install_tray_post_startup()
+    if deps.runtime_feature is not None:
+        from main.post_startup_vpn_watcher import install_vpn_tunnel_watcher_startup
+
+        install_vpn_tunnel_watcher_startup(
+            startup_host,
+            runtime_feature=deps.runtime_feature,
+            log_startup_metric=deps.log_startup_metric,
+        )
     install_update_check(
         startup_host,
         updater_feature=deps.updater_feature,

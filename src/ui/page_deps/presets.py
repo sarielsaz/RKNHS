@@ -42,6 +42,12 @@ def build_control_page_kwargs(
         method = ZAPRET1_MODE
 
     def _create_top_summary_worker(request_id: int, *, parent=None):
+        def _is_dpi_running() -> bool:
+            try:
+                return bool(runtime_feature.is_running())
+            except Exception:
+                return False
+
         return create_top_summary_worker(
             request_id,
             presets_feature.get_selected_source_preset_display,
@@ -49,6 +55,7 @@ def build_control_page_kwargs(
             presets_feature.read_selected_preset_source,
             launch_method=method,
             get_enabled_profile_count_fallback=profile_feature.count_enabled_profiles,
+            is_dpi_running=_is_dpi_running,
             parent=parent,
         )
 
@@ -89,9 +96,25 @@ def build_control_page_kwargs(
         "open_presets": lambda page=user_presets_page: show_page(page, allow_internal=True),
         "open_preset_setup": lambda page=preset_setup_page: show_page(page, allow_internal=True),
         "open_premium": lambda: show_page(PageName.PREMIUM, allow_internal=True),
+        "open_blockcheck": lambda: show_page(PageName.BLOCKCHECK),
+        "open_vpn_split": lambda: show_page(PageName.VPN_SPLIT),
+        "apply_light_bypass": lambda m=method: _apply_light_bypass(presets_feature, m),
+        "apply_scenario": lambda scenario_id, m=method: _apply_scenario(presets_feature, m, scenario_id),
         "create_external_open_url_worker": external_actions_feature.create_open_url_worker,
         "ui_state_store": ui_state_store,
     }
+
+
+def _apply_light_bypass(presets_feature, launch_method: str) -> str | None:
+    from presets.scope_actions import apply_light_bypass
+
+    return apply_light_bypass(presets_feature, launch_method)
+
+
+def _apply_scenario(presets_feature, launch_method: str, scenario_id: str):
+    from presets.scope_actions import apply_scenario_profile
+
+    return apply_scenario_profile(presets_feature, launch_method, scenario_id)
 
 
 def build_preset_setup_page_kwargs(
@@ -244,7 +267,7 @@ def build_preset_raw_editor_page_kwargs(
         "create_raw_preset_activate_worker": presets_feature.create_raw_preset_activate_worker,
         "create_raw_preset_action_worker": presets_feature.create_raw_preset_action_worker,
         "launch_method": method,
-        "title": "Пресет Zapret 2" if method == ZAPRET2_MODE else "Пресет Zapret 1",
+        "title": "Пресет RKNHS" if method == ZAPRET2_MODE else "Пресет RKNHS Classic",
         "runtime_actions": RawPresetRuntimeActions(
             start=runtime_feature.start,
             stop=runtime_feature.stop,

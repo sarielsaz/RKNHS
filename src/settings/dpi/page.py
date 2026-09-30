@@ -37,10 +37,10 @@ from qfluentwidgets import StrongBodyLabel, CaptionLabel as _CaptionLabel
 METHOD_OPTION_TEXT = {
     ZAPRET2_MODE: {
         "title_key": "page.dpi_settings.method.zapret2_mode.title",
-        "title": "Zapret 2",
+        "title": "RKNHS",
         "desc_key": "page.dpi_settings.method.zapret2_mode.desc",
         "desc": (
-            f"Режим Zapret 2 на движке {ENGINE_WINWS2} ({EXE_NAME_WINWS2}) "
+            f"Режим RKNHS на движке {ENGINE_WINWS2} ({EXE_NAME_WINWS2}) "
             "+ готовые пресеты для быстрого запуска. Поддерживает Lua-код для своих стратегий."
         ),
     },
@@ -55,10 +55,10 @@ METHOD_OPTION_TEXT = {
     },
     ZAPRET1_MODE: {
         "title_key": "page.dpi_settings.method.zapret1_mode.title",
-        "title": "Zapret 1",
+        "title": "RKNHS Classic",
         "desc_key": "page.dpi_settings.method.zapret1_mode.desc",
         "desc": (
-            f"Режим Zapret 1 на движке {ENGINE_WINWS1} ({EXE_NAME_WINWS1}) "
+            f"Режим RKNHS Classic на движке {ENGINE_WINWS1} ({EXE_NAME_WINWS1}) "
             "+ готовые пресеты для быстрого запуска. Не использует Lua-код и блобы."
         ),
     },
@@ -141,13 +141,39 @@ class DpiSettingsPage(BasePage):
 
     def _apply_page_theme(self, tokens=None, force: bool = False) -> None:
         _ = force
-        theme_tokens = tokens or get_theme_tokens()
+        from ui.tech_style import resolve_tech_tokens
+
+        theme_tokens = resolve_tech_tokens(tokens)
 
         try:
             if hasattr(self, "separator2") and self.separator2 is not None:
-                self.separator2.setStyleSheet(f"background-color: {theme_tokens.divider_strong}; margin: 8px 0;")
+                self.separator2.setStyleSheet(
+                    f"background-color: {theme_tokens.divider_strong}; margin: 8px 0;"
+                )
         except Exception:
             pass
+
+        label_qss = (
+            f"color: {theme_tokens.fg_muted}; font-family: {theme_tokens.font_mono_qss}; "
+            "font-size: 12px; background: transparent;"
+        )
+        header_qss = (
+            f"color: {theme_tokens.fg}; font-family: {theme_tokens.font_family_qss}; "
+            "font-size: 13px; font-weight: 600; background: transparent;"
+        )
+        for attr, qss in (
+            ("_method_desc_label", label_qss),
+            ("zapret2_header", header_qss),
+            ("_zapret1_header", header_qss),
+            ("_orchestra_label", header_qss),
+        ):
+            widget = getattr(self, attr, None)
+            if widget is None:
+                continue
+            try:
+                widget.setStyleSheet(qss)
+            except Exception:
+                pass
 
     def _build_ui(self):
         """Строит UI страницы"""
@@ -161,7 +187,8 @@ class DpiSettingsPage(BasePage):
         )
         self._method_card = method_card
         method_layout = QVBoxLayout()
-        method_layout.setSpacing(10)
+        method_layout.setSpacing(14)
+        method_layout.setContentsMargins(4, 4, 4, 8)
         
         method_desc = _CaptionLabel(
             self._tr("page.dpi_settings.launch_method.desc", "Выберите способ запуска обхода блокировок")
@@ -171,16 +198,16 @@ class DpiSettingsPage(BasePage):
         method_layout.addWidget(method_desc)
 
         # ═══════════════════════════════════════
-        # ZAPRET 2
+        # RKNHS 2
         # ═══════════════════════════════════════
         self.zapret2_header = StrongBodyLabel(
-            self._tr("page.dpi_settings.section.zapret2", f"Zapret 2 ({EXE_NAME_WINWS2})")
+            self._tr("page.dpi_settings.section.zapret2", f"RKNHS ({EXE_NAME_WINWS2})")
         )
         _set_method_section_accessibility(self.zapret2_header, self.zapret2_header.text())
         self.zapret2_header.setContentsMargins(0, 8, 0, 4)
         method_layout.addWidget(self.zapret2_header)
 
-        # Zapret 2 mode - рекомендуется
+        # RKNHS mode - рекомендуется
         self.method_zapret2_mode = Win11RadioOption(
             *self._method_option_text(ZAPRET2_MODE),
             icon_name="mdi.rocket-launch",
@@ -200,17 +227,17 @@ class DpiSettingsPage(BasePage):
         method_layout.addWidget(self.method_orchestra)
 
         # ───────────────────────────────────────
-        # ZAPRET 1
+        # RKNHS 1
         # ───────────────────────────────────────
         zapret1_header = StrongBodyLabel(
-            self._tr("page.dpi_settings.section.zapret1", f"Zapret 1 ({EXE_NAME_WINWS1})")
+            self._tr("page.dpi_settings.section.zapret1", f"RKNHS Classic ({EXE_NAME_WINWS1})")
         )
         self._zapret1_header = zapret1_header
         _set_method_section_accessibility(zapret1_header, zapret1_header.text())
         zapret1_header.setContentsMargins(0, 12, 0, 4)
         method_layout.addWidget(zapret1_header)
 
-        # Zapret 1 mode
+        # RKNHS Classic mode
         self.method_zapret1_mode = Win11RadioOption(
             *self._method_option_text(ZAPRET1_MODE),
             icon_name="mdi.rocket-launch-outline",
@@ -743,10 +770,10 @@ class DpiSettingsPage(BasePage):
             _set_method_description_accessibility(self._method_desc_label, self._method_desc_label.text())
 
         if hasattr(self, "zapret2_header") and self.zapret2_header is not None:
-            self.zapret2_header.setText(self._tr("page.dpi_settings.section.zapret2", f"Zapret 2 ({EXE_NAME_WINWS2})"))
+            self.zapret2_header.setText(self._tr("page.dpi_settings.section.zapret2", f"RKNHS ({EXE_NAME_WINWS2})"))
             _set_method_section_accessibility(self.zapret2_header, self.zapret2_header.text())
         if self._zapret1_header is not None:
-            self._zapret1_header.setText(self._tr("page.dpi_settings.section.zapret1", f"Zapret 1 ({EXE_NAME_WINWS1})"))
+            self._zapret1_header.setText(self._tr("page.dpi_settings.section.zapret1", f"RKNHS Classic ({EXE_NAME_WINWS1})"))
             _set_method_section_accessibility(self._zapret1_header, self._zapret1_header.text())
         if self._orchestra_label is not None:
             self._orchestra_label.setText(

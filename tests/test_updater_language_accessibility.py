@@ -146,7 +146,7 @@ class UpdaterLanguageAccessibilityTests(unittest.TestCase):
             refresh_server_rows=lambda: None,
         )
 
-        expected = f"Версия ZapretGUI: v{APP_VERSION} · {CHANNEL}"
+        expected = f"Версия RKNHS: v{APP_VERSION} · {CHANNEL}"
 
         self.assertEqual(version_info_label.accessibleName(), expected)
         self.assertEqual(

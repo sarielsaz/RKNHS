@@ -343,7 +343,7 @@ class Win11ToggleRowTests(unittest.TestCase):
         from ui.widgets.win11_controls import Win11ToggleRow
 
         row = Win11ToggleRow.__new__(Win11ToggleRow)
-        row._title_label = _StyledTextLabel("Автозапуск ZapretGUI")
+        row._title_label = _StyledTextLabel("Автозапуск RKNHS")
         row._desc_label = _StyledTextLabel("Запускать программу в трее")
         row._icon_label = None
         tokens = SimpleNamespace(

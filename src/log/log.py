@@ -150,7 +150,7 @@ class Logger:
 
         # Создаем новый лог файл для текущей сессии
         with open(self.log_file, "w", encoding="utf-8-sig") as f:
-            f.write(f"=== Zapret 2 GUI Log - Started {datetime.now():%Y-%m-%d %H:%M:%S} ===\n")
+            f.write(f"=== RKNHS Log - Started {datetime.now():%Y-%m-%d %H:%M:%S} ===\n")
             f.write(f"Log file: {os.path.basename(self.log_file)}\n")
             f.write(f"Total log files in folder: {len(glob.glob(os.path.join(log_dir, 'zapret_log_*.txt')))}\n")
             f.write("="*60 + "\n\n")
@@ -233,6 +233,9 @@ class Logger:
         self._ui_error_last_ts = now_ts
 
         level_text = str(level or "").strip()
+        # Тост должен быть читаемым: полный traceback — только в файл лога.
+        if len(text) > 280:
+            text = text[:277].rstrip() + "…"
         payload = f"[{level_text}] {text}" if level_text else text
 
         try:

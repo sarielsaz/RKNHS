@@ -880,7 +880,7 @@ class WindowNotificationCenter(QObject):
         set_control_accessibility(
             bar,
             name=state_text,
-            description="Системное уведомление ZapretGUI.",
+            description="Системное уведомление RKNHS.",
         )
 
     def _set_infobar_action_button_accessibility(self, button, action: dict, button_text: str) -> None:

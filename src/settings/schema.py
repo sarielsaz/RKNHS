@@ -62,6 +62,10 @@ def default_program() -> dict[str, Any]:
         "discord_auto_restart": True,
         "max_blocked": False,
         "defender_disabled": False,
+        "isp_auto_preset_enabled": True,
+        "isp_auto_preset_applied": False,
+        "service_dashboard_ids": ["telegram", "youtube", "discord"],
+        "active_scenario_id": "",
     }
 
 
@@ -81,12 +85,12 @@ def default_appearance() -> dict[str, Any]:
     return {
         "display_mode": "dark",
         "ui_language": "ru",
-        "mica_enabled": True,
-        "accent_color": None,
+        "mica_enabled": False,
+        "accent_color": "#5CD6FF",
         "follow_windows_accent": False,
         "tinted_background": False,
         "tinted_background_intensity": DEFAULT_TINTED_INTENSITY,
-        "background_preset": "standard",
+        "background_preset": "amoled",
         "rkn_background": None,
         "animations_enabled": False,
         "smooth_scroll_enabled": False,
@@ -105,6 +109,7 @@ def default_warnings() -> dict[str, Any]:
         "disable_kaspersky_warning": False,
         "isp_dns_info_shown": False,
         "tg_proxy_deeplink_done": False,
+        "preset_guide_seen": False,
     }
 
 
@@ -160,6 +165,17 @@ def default_premium() -> dict[str, Any]:
         "pair_code": None,
         "pair_expires_at": None,
         "premium_cache": None,
+    }
+
+
+def default_license() -> dict[str, Any]:
+    return {
+        "key": "",
+        "name": "",
+        "perpetual": False,
+        "expires_at": None,
+        "machine_id": "",
+        "activated_at": None,
     }
 
 
@@ -242,6 +258,16 @@ def default_blockcheck() -> dict[str, Any]:
     }
 
 
+def default_vpn_split() -> dict[str, Any]:
+    return {
+        "enabled": False,
+        "config_path": "",
+        "refresh_interval_minutes": 30,
+        "cli_tunnel_installed": False,
+        "rules": [],
+    }
+
+
 def default_folders() -> dict[str, Any]:
     from folders.defaults import build_default_preset_folders, build_default_profile_folders
 
@@ -266,11 +292,13 @@ def build_default_settings() -> dict[str, Any]:
         "dns": default_dns(),
         "hosts": default_hosts(),
         "premium": default_premium(),
+        "license": default_license(),
         "ui_state": default_ui_state(),
         "profile_strategy_state": default_profile_strategy_state(),
         "user_profiles": default_user_profiles(),
         "orchestra": default_orchestra(),
         "updater": default_updater(),
         "blockcheck": default_blockcheck(),
+        "vpn_split": default_vpn_split(),
         "folders": default_folders(),
     }

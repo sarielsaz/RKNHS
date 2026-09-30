@@ -283,7 +283,23 @@ def normalize_program(data: object) -> dict[str, Any]:
         "discord_auto_restart": as_bool(raw.get("discord_auto_restart"), defaults["discord_auto_restart"]),
         "max_blocked": as_bool(raw.get("max_blocked"), defaults["max_blocked"]),
         "defender_disabled": as_bool(raw.get("defender_disabled"), defaults["defender_disabled"]),
+        "isp_auto_preset_enabled": as_bool(raw.get("isp_auto_preset_enabled"), defaults["isp_auto_preset_enabled"]),
+        "isp_auto_preset_applied": as_bool(raw.get("isp_auto_preset_applied"), defaults["isp_auto_preset_applied"]),
+        "service_dashboard_ids": unique_str_list(raw.get("service_dashboard_ids") or defaults["service_dashboard_ids"]),
+        "active_scenario_id": _normalize_active_scenario_id(
+            raw.get("active_scenario_id"),
+            defaults["active_scenario_id"],
+        ),
     }
+
+
+def _normalize_active_scenario_id(value: object, default: str = "") -> str:
+    from presets.scenario_profiles import VALID_SCENARIO_IDS
+
+    text = as_clean_str(value, default).lower()
+    if text in VALID_SCENARIO_IDS:
+        return text
+    return ""
 
 
 def normalize_window(data: object) -> dict[str, Any]:
@@ -345,6 +361,7 @@ def normalize_warnings(data: object) -> dict[str, Any]:
         "disable_kaspersky_warning": as_bool(raw.get("disable_kaspersky_warning"), defaults["disable_kaspersky_warning"]),
         "isp_dns_info_shown": as_bool(raw.get("isp_dns_info_shown"), defaults["isp_dns_info_shown"]),
         "tg_proxy_deeplink_done": as_bool(raw.get("tg_proxy_deeplink_done"), defaults["tg_proxy_deeplink_done"]),
+        "preset_guide_seen": as_bool(raw.get("preset_guide_seen"), defaults.get("preset_guide_seen", False)),
     }
 
 
@@ -430,6 +447,19 @@ def normalize_premium(data: object) -> dict[str, Any]:
         "pair_code": pair_code or None,
         "pair_expires_at": as_nullable_int(raw.get("pair_expires_at")),
         "premium_cache": cache if isinstance(cache, dict) else None,
+    }
+
+
+def normalize_license(data: object) -> dict[str, Any]:
+    raw = as_dict(data)
+    defaults = schema.default_license()
+    return {
+        "key": as_clean_str(raw.get("key")),
+        "name": as_clean_str(raw.get("name")),
+        "perpetual": as_bool(raw.get("perpetual"), defaults["perpetual"]),
+        "expires_at": as_nullable_str(raw.get("expires_at")),
+        "machine_id": as_clean_str(raw.get("machine_id")),
+        "activated_at": as_nullable_str(raw.get("activated_at")),
     }
 
 
@@ -669,6 +699,48 @@ def normalize_blockcheck(data: object) -> dict[str, Any]:
     }
 
 
+def normalize_vpn_split(data: object) -> dict[str, Any]:
+    raw = as_dict(data)
+    defaults = schema.default_vpn_split()
+    rules: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in raw.get("rules") or []:
+        row = as_dict(item)
+        domain_raw = as_clean_str(row.get("domain"), "")
+        if not domain_raw:
+            continue
+        try:
+            from vpn_split.domain_patterns import normalize_domain_pattern
+
+            domain = normalize_domain_pattern(domain_raw)
+        except Exception:
+            domain = domain_raw.lower().strip(".")
+        if not domain or domain in seen:
+            continue
+        seen.add(domain)
+        ips = unique_str_list(row.get("ips"))
+        rules.append(
+            {
+                "domain": domain,
+                "enabled": as_bool(row.get("enabled"), True),
+                "ips": ips,
+                "updated_at": as_int(row.get("updated_at"), 0, minimum=0),
+            }
+        )
+    return {
+        "enabled": as_bool(raw.get("enabled"), defaults["enabled"]),
+        "config_path": as_clean_str(raw.get("config_path"), defaults["config_path"]),
+        "refresh_interval_minutes": as_int(
+            raw.get("refresh_interval_minutes"),
+            defaults["refresh_interval_minutes"],
+            minimum=5,
+            maximum=24 * 60,
+        ),
+        "cli_tunnel_installed": as_bool(raw.get("cli_tunnel_installed"), defaults["cli_tunnel_installed"]),
+        "rules": rules,
+    }
+
+
 def normalize_folders(data: object) -> dict[str, Any]:
     from folders.defaults import build_default_preset_folders, build_default_profile_folders
     from folders.store import normalize_folder_state
@@ -722,11 +794,13 @@ def normalize_settings(data: object) -> dict[str, Any]:
         "dns": normalize_dns(raw.get("dns")),
         "hosts": normalize_hosts(raw.get("hosts")),
         "premium": normalize_premium(raw.get("premium")),
+        "license": normalize_license(raw.get("license")),
         "ui_state": normalize_ui_state(raw.get("ui_state")),
         "profile_strategy_state": normalize_profile_strategy_state(raw.get("profile_strategy_state")),
         "user_profiles": normalize_user_profiles(raw.get("user_profiles")),
         "orchestra": normalize_orchestra(raw.get("orchestra")),
         "updater": normalize_updater(raw.get("updater")),
         "blockcheck": normalize_blockcheck(raw.get("blockcheck")),
+        "vpn_split": normalize_vpn_split(raw.get("vpn_split")),
         "folders": normalize_folders(raw.get("folders")),
     }

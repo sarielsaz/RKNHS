@@ -18,12 +18,12 @@ LANGUAGE_OPTIONS = (
 
 TEXTS: dict[str, dict[str, str]] = {
     "sidebar.search.placeholder": {
-        "ru": "Найти в разделах и страницах",
-        "en": "Find in sections and pages",
+        "ru": "Поиск · команды и разделы",
+        "en": "Search · commands and sections",
     },
     "nav.header.settings": {
-        "ru": "Настройки Запрета",
-        "en": "Zapret Settings",
+        "ru": "Настройки RKNHS",
+        "en": "RKNHS Settings",
     },
     "nav.header.system": {
         "ru": "Инструменты",
@@ -38,12 +38,12 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Appearance",
     },
     "nav.page.zapret2_mode_control": {
-        "ru": "Управление Zapret 2",
-        "en": "Zapret 2 Control",
+        "ru": "Управление RKNHS",
+        "en": "RKNHS Control",
     },
     "nav.page.zapret1_mode_control": {
-        "ru": "Управление Zapret 1",
-        "en": "Zapret 1 Control",
+        "ru": "Управление RKNHS Classic",
+        "en": "RKNHS Classic Control",
     },
     "nav.page.orchestra": {
         "ru": "Оркестратор",
@@ -68,6 +68,10 @@ TEXTS: dict[str, dict[str, str]] = {
     "nav.page.hosts": {
         "ru": "Редактор hosts",
         "en": "Hosts Editor",
+    },
+    "nav.page.vpn_split": {
+        "ru": "VPN Split",
+        "en": "VPN Split",
     },
     "nav.page.blockcheck": {
         "ru": "BlockCheck",
@@ -130,7 +134,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Detecting process state",
     },
     "page.control.summary.preset.caption": {
-        "ru": "Текущий preset",
+        "ru": "Текущий пресет",
         "en": "Current preset",
     },
     "page.control.summary.profiles.caption": {
@@ -161,13 +165,155 @@ TEXTS: dict[str, dict[str, str]] = {
         "ru": "Активен",
         "en": "Active",
     },
+    "page.control.howto.title": {
+        "ru": "Как это устроено",
+        "en": "How it works",
+    },
+    "page.control.howto.body": {
+        "ru": (
+            "1) Выберите пресет в «Мои пресеты» — это набор профилей обхода.\n"
+            "2) Включите обход на этой странице — только тогда пресет реально применяется.\n"
+            "3) Если сайт не открывается — откройте Blockcheck и примените рабочую стратегию в текущий пресет.\n"
+            "Упрямый сервис (не DPI) лучше добавить в VPN Split, а не расширять перехват."
+        ),
+        "en": (
+            "1) Pick a preset in My presets — a set of bypass profiles.\n"
+            "2) Start bypass on this page — only then the preset is applied.\n"
+            "3) If a site still fails — open Blockcheck and apply a working strategy into the current preset.\n"
+            "Stubborn non-DPI targets belong in VPN Split, not a wider divert filter."
+        ),
+    },
+    "page.control.howto.open": {
+        "ru": "Понятно",
+        "en": "Got it",
+    },
+    "page.control.howto.open_blockcheck": {
+        "ru": "Blockcheck",
+        "en": "Blockcheck",
+    },
+    "page.control.howto.open_vpn_split": {
+        "ru": "VPN Split",
+        "en": "VPN Split",
+    },
+    "page.control.light_bypass.title": {
+        "ru": "Лёгкий обход",
+        "en": "Light bypass",
+    },
+    "page.control.light_bypass.desc": {
+        "ru": "Переключить на узкий game-filter пресет — меньше нагрузка на систему",
+        "en": "Switch to a narrow game-filter preset — lower system load",
+    },
+    "page.control.light_bypass.button": {
+        "ru": "Включить",
+        "en": "Enable",
+    },
+    "page.control.light_bypass.done": {
+        "ru": "Выбран лёгкий пресет: {name}",
+        "en": "Light preset selected: {name}",
+    },
+    "page.control.light_bypass.missing": {
+        "ru": "Не найден подходящий лёгкий пресет",
+        "en": "No suitable light preset found",
+    },
+    "page.control.light_bypass.wide_hint": {
+        "ru": "Сейчас широкий перехват — для повседневки лучше «Лёгкий обход»",
+        "en": "Wide divert is active — prefer Light bypass for daily use",
+    },
+    "page.control.traffic_map.title": {
+        "ru": "Куда идёт трафик",
+        "en": "Where traffic goes",
+    },
+    "page.control.scenarios.title": {
+        "ru": "Сценарии",
+        "en": "Scenarios",
+    },
+    "page.control.scenarios.applied": {
+        "ru": "Сценарий «{name}»: пресет {preset}",
+        "en": "Scenario “{name}”: preset {preset}",
+    },
+    "page.control.scenarios.missing": {
+        "ru": "Не найден пресет для сценария",
+        "en": "No preset found for this scenario",
+    },
+    "page.control.offline_pack.title": {
+        "ru": "Офлайн-пакет списков",
+        "en": "Offline lists pack",
+    },
+    "page.control.offline_pack.desc": {
+        "ru": "Обновляет base-списки атомарно — текущие файлы не ломаются, пока идёт замена",
+        "en": "Updates base lists atomically — live files stay intact during the swap",
+    },
+    "page.control.offline_pack.import": {
+        "ru": "Импорт zip",
+        "en": "Import zip",
+    },
+    "page.control.offline_pack.restore": {
+        "ru": "Откат",
+        "en": "Restore",
+    },
+    "page.control.offline_pack.restore_title": {
+        "ru": "Откатить списки",
+        "en": "Restore lists",
+    },
+    "page.control.offline_pack.restore_desc": {
+        "ru": "Вернуть предыдущий снимок base-списков",
+        "en": "Restore the previous base-lists snapshot",
+    },
+    "page.control.offline_pack.export": {
+        "ru": "Экспорт",
+        "en": "Export",
+    },
+    "page.control.offline_pack.export_title": {
+        "ru": "Экспорт пакета",
+        "en": "Export pack",
+    },
+    "page.control.offline_pack.export_desc": {
+        "ru": "Сохранить текущие base-списки в zip для офлайн-обновления",
+        "en": "Save current base lists as a zip for offline updates",
+    },
+    "page.control.isp_auto.title": {
+        "ru": "Автопресет по провайдеру",
+        "en": "ISP auto preset",
+    },
+    "page.control.isp_auto.desc": {
+        "ru": "При первом запуске подобрать пресет под провайдера (Ростелеком / МГТС / Дом.ру)",
+        "en": "On first run, pick a preset for your ISP (Rostelecom / MGTS / Dom.ru)",
+    },
+    "page.control.isp_auto.toast.title": {
+        "ru": "Пресет по провайдеру",
+        "en": "ISP preset",
+    },
+    "page.control.isp_auto.toast.body": {
+        "ru": "Подобран пресет «{preset}» для {isp}",
+        "en": "Selected preset “{preset}” for {isp}",
+    },
+    "page.control.preset_guide.title": {
+        "ru": "С чего начать",
+        "en": "Getting started",
+    },
+    "page.control.preset_guide.body": {
+        "ru": "Выберите путь: авто по провайдеру, подбор через Blockcheck или оставить текущий пресет.",
+        "en": "Choose a path: ISP auto, Blockcheck pick, or keep the current preset.",
+    },
+    "page.control.preset_guide.isp": {
+        "ru": "Авто по провайдеру",
+        "en": "ISP auto",
+    },
+    "page.control.preset_guide.blockcheck": {
+        "ru": "Подобрать (Blockcheck)",
+        "en": "Pick via Blockcheck",
+    },
+    "page.control.preset_guide.keep": {
+        "ru": "Оставить текущий",
+        "en": "Keep current",
+    },
     "page.control.status.running": {
-        "ru": "Zapret работает",
-        "en": "Zapret is running",
+        "ru": "RKNHS работает",
+        "en": "RKNHS is running",
     },
     "page.control.status.stopped": {
-        "ru": "Zapret остановлен",
-        "en": "Zapret stopped",
+        "ru": "RKNHS остановлен",
+        "en": "RKNHS stopped",
     },
     "page.control.status.bypass_active": {
         "ru": "Обход блокировок активен",
@@ -186,8 +332,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "No new messages yet",
     },
     "page.control.button.start": {
-        "ru": "Запустить Zapret",
-        "en": "Start Zapret",
+        "ru": "Запустить RKNHS",
+        "en": "Start RKNHS",
     },
     "page.control.button.stop_only_winws": {
         "ru": f"Остановить только {EXE_NAME_WINWS1}",
@@ -214,12 +360,12 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Auto-start DPI after app launch",
     },
     "page.control.setting.autostart.desc": {
-        "ru": "После запуска ZapretGUI автоматически запускать текущий DPI-режим",
-        "en": "Automatically start the current DPI mode after ZapretGUI launches",
+        "ru": "После запуска RKNHS автоматически запускать текущий DPI-режим",
+        "en": "Automatically start the current DPI mode after RKNHS launches",
     },
     "page.control.setting.gui_autostart.title": {
-        "ru": "Автозапуск ZapretGUI",
-        "en": "ZapretGUI autostart",
+        "ru": "Автозапуск RKNHS",
+        "en": "RKNHS autostart",
     },
     "page.control.setting.gui_autostart.desc": {
         "ru": "Запускать программу в трее при входе в Windows",
@@ -230,8 +376,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Window and tray behavior",
     },
     "page.control.setting.tray_close_mode.desc": {
-        "ru": "Выберите, когда ZapretGUI будет скрывать окно в системный трей",
-        "en": "Choose when ZapretGUI hides the window to the system tray",
+        "ru": "Выберите, когда RKNHS будет скрывать окно в системный трей",
+        "en": "Choose when RKNHS hides the window to the system tray",
     },
     "page.control.setting.defender.title": {
         "ru": "Отключить Windows Defender",
@@ -258,8 +404,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Open Folder",
     },
     "page.winws2_control.title": {
-        "ru": "Управление Zapret 2",
-        "en": "Zapret 2 Control",
+        "ru": "Управление RKNHS",
+        "en": "RKNHS Control",
     },
     "page.winws2_control.preset_switch": {
         "ru": "Сменить пресет обхода блокировок",
@@ -270,8 +416,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Preset setup",
     },
     "page.winws1_control.title": {
-        "ru": "Управление Zapret 1",
-        "en": "Zapret 1 Control",
+        "ru": "Управление RKNHS Classic",
+        "en": "RKNHS Classic Control",
     },
     "page.winws1_control.presets": {
         "ru": "Пресеты и настройка пресета",
@@ -286,12 +432,12 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Detecting process state",
     },
     "page.winws1_control.status.running": {
-        "ru": "Zapret 1 работает",
-        "en": "Zapret 1 is running",
+        "ru": "RKNHS Classic работает",
+        "en": "RKNHS Classic is running",
     },
     "page.winws1_control.status.stopped": {
-        "ru": "Zapret 1 остановлен",
-        "en": "Zapret 1 stopped",
+        "ru": "RKNHS Classic остановлен",
+        "en": "RKNHS Classic stopped",
     },
     "page.winws1_control.status.bypass_active": {
         "ru": "Обход блокировок активен",
@@ -302,8 +448,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Press Start to activate",
     },
     "page.winws1_control.button.start": {
-        "ru": "Запустить Zapret",
-        "en": "Start Zapret",
+        "ru": "Запустить RKNHS",
+        "en": "Start RKNHS",
     },
     "page.winws1_control.button.stop_winws": {
         "ru": f"Остановить {EXE_NAME_WINWS1}",
@@ -342,8 +488,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Auto-start DPI after app launch",
     },
     "page.winws1_control.setting.autostart.desc": {
-        "ru": "После запуска ZapretGUI автоматически запускать текущий DPI-режим",
-        "en": "Automatically start the current DPI mode after ZapretGUI launches",
+        "ru": "После запуска RKNHS автоматически запускать текущий DPI-режим",
+        "en": "Automatically start the current DPI mode after RKNHS launches",
     },
     "page.winws1_control.card.advanced": {
         "ru": "Дополнительные настройки",
@@ -457,6 +603,14 @@ TEXTS: dict[str, dict[str, str]] = {
         "ru": "Сервисы",
         "en": "Services",
     },
+    "page.vpn_split.title": {
+        "ru": "VPN Split",
+        "en": "VPN Split",
+    },
+    "page.vpn_split.subtitle": {
+        "ru": "Упрямые домены через VPN; YouTube/DPI оставьте на пресете Control — не расширяйте перехват",
+        "en": "Stubborn domains via VPN; keep YouTube/DPI on the Control preset — do not widen divert",
+    },
     "page.blockcheck.title": {
         "ru": "BlockCheck",
         "en": "BlockCheck",
@@ -466,8 +620,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Live Network Monitoring",
     },
     "page.blockcheck.subtitle": {
-        "ru": "Автоматический анализ блокировок и диагностика сети в один клик",
-        "en": "Automatic blocking analysis and network diagnostics in one click",
+        "ru": "Проверка блокировок и подбор. «Применить» пишет стратегию в текущий пресет на Control.",
+        "en": "Block checks and strategy pick. Apply writes into the current Control preset.",
     },
     "page.blockcheck.tab.blockcheck": {
         "ru": "BlockCheck",
@@ -610,8 +764,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Support Channels",
     },
     "page.about.subtitle": {
-        "ru": "Версия, подписка и информация",
-        "en": "Version, subscription and information",
+        "ru": "Собственная модификация Sazzero на основе RKNHS",
+        "en": "Sazzero custom fork based on RKNHS",
     },
     "page.about.tab.about": {
         "ru": "О ПРОГРАММЕ",
@@ -636,6 +790,98 @@ TEXTS: dict[str, dict[str, str]] = {
     "page.about.section.subscription": {
         "ru": "Подписка",
         "en": "Subscription",
+    },
+    "page.about.license.section": {
+        "ru": "Лицензия",
+        "en": "License",
+    },
+    "page.about.license.hint": {
+        "ru": "Скопируйте отпечаток устройства и передайте его для выпуска ключа. Ключ привязан к этому ПК и проверяется по подписи Ed25519.",
+        "en": "Copy the device fingerprint and send it to receive a key. The key is bound to this PC and verified with an Ed25519 signature.",
+    },
+    "page.about.license.machine_id": {
+        "ru": "Отпечаток устройства:",
+        "en": "Device fingerprint:",
+    },
+    "page.about.license.copy_fingerprint": {
+        "ru": "Копировать",
+        "en": "Copy",
+    },
+    "page.about.license.copy_fingerprint_done": {
+        "ru": "Отпечаток устройства скопирован.",
+        "en": "Device fingerprint copied.",
+    },
+    "page.about.license.key_placeholder": {
+        "ru": "RKNHS-L1.…",
+        "en": "RKNHS-L1.…",
+    },
+    "page.about.license.activate": {
+        "ru": "Активировать",
+        "en": "Activate",
+    },
+    "page.about.license.deactivate": {
+        "ru": "Сбросить",
+        "en": "Reset",
+    },
+    "page.about.license.deactivated": {
+        "ru": "Лицензия удалена с этого компьютера.",
+        "en": "License removed from this computer.",
+    },
+    "page.about.license.key_missing": {
+        "ru": "Вставьте лицензионный ключ.",
+        "en": "Paste a license key.",
+    },
+    "page.about.license.status.active": {
+        "ru": "Активна: {name}, срок: {expiry}",
+        "en": "Active: {name}, valid until: {expiry}",
+    },
+    "page.about.license.status.inactive": {
+        "ru": "Лицензия не активирована.",
+        "en": "License is not activated.",
+    },
+    "page.about.license.unnamed": {
+        "ru": "лицензия",
+        "en": "license",
+    },
+    "startup.splash.step.boot": {
+        "ru": "Загружаем программу RKNHS…",
+        "en": "Loading RKNHS…",
+    },
+    "startup.splash.step.fun": {
+        "ru": "Проверяем приколы…",
+        "en": "Checking the fun stuff…",
+    },
+    "startup.splash.step.connect": {
+        "ru": "Коннектимся…",
+        "en": "Connecting…",
+    },
+    "startup.splash.step.license": {
+        "ru": "Проверяем лицензию…",
+        "en": "Checking license…",
+    },
+    "startup.license.dialog.title": {
+        "ru": "Активация RKNHS",
+        "en": "RKNHS activation",
+    },
+    "startup.license.dialog.heading": {
+        "ru": "Нужна лицензия RKNHS",
+        "en": "RKNHS license required",
+    },
+    "startup.license.dialog.intro": {
+        "ru": "Программа работает только с действующим ключом на этом компьютере. Без активации окно закроется.",
+        "en": "The app requires a valid key on this PC. If you close this window without activating, the app will exit.",
+    },
+    "startup.license.dialog.fingerprint_title": {
+        "ru": "Отпечаток этого компьютера",
+        "en": "This computer's fingerprint",
+    },
+    "startup.license.dialog.fingerprint_hint": {
+        "ru": "Отпечаток — уникальный идентификатор вашего ПК. Скопируйте его и передайте автору программы для выпуска ключа, привязанного к этому устройству. На другом ПК тот же ключ не сработает.",
+        "en": "The fingerprint uniquely identifies this PC. Copy it and send it to the author to receive a key bound to this machine. The same key will not work on another PC.",
+    },
+    "startup.license.dialog.key_caption": {
+        "ru": "Лицензионный ключ",
+        "en": "License key",
     },
     "page.about.version.value_template": {
         "ru": "Версия {version}",
@@ -662,8 +908,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Premium ({days} days left)",
     },
     "page.about.subscription.desc": {
-        "ru": "Подписка Zapret Premium открывает доступ к дополнительным темам, приоритетной поддержке и VPN-сервису.",
-        "en": "Zapret Premium gives access to extra themes, priority support, and VPN service.",
+        "ru": "Подписка RKNHS Premium открывает доступ к дополнительным темам, приоритетной поддержке и VPN-сервису.",
+        "en": "RKNHS Premium gives access to extra themes, priority support, and VPN service.",
     },
     "page.about.button.premium_vpn": {
         "ru": "Premium и VPN",
@@ -742,8 +988,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Guide and FAQ",
     },
     "page.about.help.docs.android.title": {
-        "ru": "На Android (Magisk Zapret, ByeByeDPI и др.)",
-        "en": "On Android (Magisk Zapret, ByeByeDPI, etc.)",
+        "ru": "На Android (Magisk RKNHS, ByeByeDPI и др.)",
+        "en": "On Android (Magisk RKNHS, ByeByeDPI, etc.)",
     },
     "page.about.help.docs.android.desc": {
         "ru": "Открыть инструкцию на сайте",
@@ -766,20 +1012,108 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Learning",
     },
     "page.about.course.youtube.title": {
-        "ru": "Курс и гайд по Zapret 2",
-        "en": "Zapret 2 course and guide",
+        "ru": "Курс и гайд по RKNHS",
+        "en": "RKNHS course and guide",
     },
     "page.about.course.youtube.desc": {
-        "ru": "Видео по настройке и пониманию Zapret 2",
-        "en": "Videos about setting up and understanding Zapret 2",
+        "ru": "Видео по настройке и пониманию RKNHS",
+        "en": "Videos about setting up and understanding RKNHS",
     },
     "page.about.course.youtube_playlist.title": {
-        "ru": "Плейлист курса по Zapret 2",
-        "en": "Zapret 2 course playlist",
+        "ru": "Плейлист курса по RKNHS",
+        "en": "RKNHS course playlist",
     },
     "page.about.course.youtube_playlist.desc": {
         "ru": "Все видео курса одним списком",
         "en": "All course videos in one playlist",
+    },
+    "page.about.legacy_docs.group": {
+        "ru": "Как устроены пресеты",
+        "en": "How presets work",
+    },
+    "page.about.legacy_docs.note": {
+        "ru": (
+            "Пресет — набор профилей обхода DPI. Выберите его в «Мои пресеты», затем включите обход на Control. "
+            "Профили и готовые стратегии правятся в «Настройка пресета». "
+            "Blockcheck проверяет стратегии и может записать рабочую в текущий пресет. "
+            "Orchestra подбирает стратегию по хостам (обычно тяжелее). "
+            "VPN Split — для упрямых сервисов без расширения DPI-фильтра."
+        ),
+        "en": (
+            "A preset is a set of DPI bypass profiles. Pick it in My presets, then start bypass on Control. "
+            "Profiles and ready strategies are edited in Preset setup. "
+            "Blockcheck probes strategies and can write a working one into the current preset. "
+            "Orchestra learns per-host strategies (usually heavier). "
+            "VPN Split is for stubborn services without widening the DPI filter."
+        ),
+    },
+    "page.about.legacy_docs.course.group": {
+        "ru": "Быстрые шаги",
+        "en": "Quick steps",
+    },
+    "page.about.legacy_docs.preset.title": {
+        "ru": "Пресет",
+        "en": "Preset",
+    },
+    "page.about.legacy_docs.preset.desc": {
+        "ru": "Конфиг в «Мои пресеты» — применяется после запуска обхода",
+        "en": "Config in My presets — applied after starting bypass",
+    },
+    "page.about.legacy_docs.preset.accessible_name": {
+        "ru": "О пресетах",
+        "en": "About presets",
+    },
+    "page.about.legacy_docs.profile.title": {
+        "ru": "Профиль",
+        "en": "Profile",
+    },
+    "page.about.legacy_docs.profile.desc": {
+        "ru": "Блок фильтров и стратегий внутри пресета",
+        "en": "Filter and strategy block inside a preset",
+    },
+    "page.about.legacy_docs.profile.accessible_name": {
+        "ru": "О профилях",
+        "en": "About profiles",
+    },
+    "page.about.legacy_docs.github.title": {
+        "ru": "GitHub RKNHS",
+        "en": "RKNHS on GitHub",
+    },
+    "page.about.legacy_docs.bolvan.title": {
+        "ru": "bol-van zapret-win-bundle",
+        "en": "bol-van zapret-win-bundle",
+    },
+    "page.about.legacy_docs.bolvan.desc": {
+        "ru": "Оригинальный winws и winws2 от bol-van",
+        "en": "Original winws and winws2 by bol-van",
+    },
+    "page.about.legacy_docs.bolvan.accessible_name": {
+        "ru": "Открыть репозиторий bol-van",
+        "en": "Open bol-van repository",
+    },
+    "page.about.legacy_docs.blockcheck.title": {
+        "ru": "BlockCheck — обсуждения",
+        "en": "BlockCheck discussions",
+    },
+    "page.about.legacy_docs.blockcheck.desc": {
+        "ru": "Тест стратегий; Apply пишет в текущий пресет Control",
+        "en": "Strategy probe; Apply writes into the current Control preset",
+    },
+    "page.about.legacy_docs.blockcheck.accessible_name": {
+        "ru": "Открыть BlockCheck на GitHub",
+        "en": "Open BlockCheck on GitHub",
+    },
+    "page.about.legacy_docs.hostlist_form.title": {
+        "ru": "Заявка на hostlist / ipset",
+        "en": "Hostlist / ipset request",
+    },
+    "page.about.legacy_docs.hostlist_form.desc": {
+        "ru": "Форма запроса новых списков для профиля",
+        "en": "Request form for new profile lists",
+    },
+    "page.about.legacy_docs.hostlist_form.accessible_name": {
+        "ru": "Открыть форму заявки hostlist",
+        "en": "Open hostlist request form",
     },
     "page.about.help.news.mastodon.title": {
         "ru": "Mastodon профиль",
@@ -806,8 +1140,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Keep thinking, keep searching, keep learning....",
     },
     "page.about.help.motto.cta": {
-        "ru": "Zapret2 - думай свободно, ищи смелее, учись всегда.",
-        "en": "Zapret2 - think freely, search boldly, learn always.",
+        "ru": "RKNHS - думай свободно, ищи смелее, учись всегда.",
+        "en": "RKNHS - think freely, search boldly, learn always.",
     },
     "page.appearance.subtitle": {
         "ru": "Настройка внешнего вида приложения",
@@ -834,8 +1168,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Performance",
     },
     "page.autostart.subtitle": {
-        "ru": "Настройка автоматического запуска Zapret",
-        "en": "Configure automatic Zapret startup",
+        "ru": "Настройка автоматического запуска RKNHS",
+        "en": "Configure automatic RKNHS startup",
     },
     "page.autostart.section.status": {
         "ru": "Статус",
@@ -858,16 +1192,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Autostart disabled",
     },
     "page.autostart.status.disabled.desc": {
-        "ru": "Zapret не запускается автоматически",
-        "en": "Zapret does not start automatically",
+        "ru": "RKNHS не запускается автоматически",
+        "en": "RKNHS does not start automatically",
     },
     "page.autostart.status.enabled.title": {
         "ru": "Автозапуск включён",
         "en": "Autostart enabled",
     },
     "page.autostart.status.enabled.desc.base": {
-        "ru": "Zapret запускается автоматически при входе в Windows и открывается в трее",
-        "en": "Zapret starts automatically on Windows logon and opens in the tray",
+        "ru": "RKNHS запускается автоматически при входе в Windows и открывается в трее",
+        "en": "RKNHS starts automatically on Windows logon and opens in the tray",
     },
     "page.autostart.button.disable": {
         "ru": "Отключить",
@@ -886,8 +1220,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Strategy:",
     },
     "page.autostart.mode.zapret2_mode": {
-        "ru": "Профили (Zapret 2)",
-        "en": "Zapret 2 mode",
+        "ru": "Профили (RKNHS)",
+        "en": "RKNHS mode",
     },
     "page.autostart.mode.orchestra_learning": {
         "ru": "Оркестр (автообучение)",
@@ -902,16 +1236,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Not selected",
     },
     "page.autostart.option.gui.title": {
-        "ru": "Автозапуск программы Zapret",
-        "en": "Autostart Zapret application",
+        "ru": "Автозапуск программы RKNHS",
+        "en": "Autostart RKNHS application",
     },
     "page.autostart.option.gui.desc": {
         "ru": "Запускает главное окно программы при входе в Windows. Приложение стартует в трее и уже оттуда применяет текущие настройки.",
         "en": "Starts the main application window on Windows logon. The app launches in the tray and applies the current settings from there.",
     },
     "page.autostart.tip.recommendation": {
-        "ru": "Используется один тип автозапуска: ярлык ZapretGUI в папке автозагрузки Windows.",
-        "en": "Only one autostart type is used: a ZapretGUI shortcut in the Windows Startup folder.",
+        "ru": "Используется один тип автозапуска: ярлык RKNHS в папке автозагрузки Windows.",
+        "en": "Only one autostart type is used: a RKNHS shortcut in the Windows Startup folder.",
     },
     "page.connection.title": {
         "ru": "Диагностика соединения",
@@ -974,8 +1308,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Waiting to start",
     },
     "page.custom_domains.title": {
-        "ru": "Кастомные (мои) домены (hostlist) для работы с Zapret",
-        "en": "Custom Domains (hostlist) for Zapret",
+        "ru": "Кастомные (мои) домены (hostlist) для работы с RKNHS",
+        "en": "Custom Domains (hostlist) for RKNHS",
     },
     "page.custom_domains.subtitle": {
         "ru": "Управление доменами (other.txt). Субдомены учитываются автоматически. Строчка rkn.ru учитывает и сайт fuckyou.rkn.ru и сайт ass.rkn.ru. Чтобы исключить субдомены напишите домен с символов ^ в начале, то есть например так ^rkn.ru",
@@ -1246,24 +1580,24 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Choose how to run bypass strategies",
     },
     "page.dpi_settings.section.zapret2": {
-        "ru": f"Zapret 2 ({EXE_NAME_WINWS2})",
-        "en": f"Zapret 2 ({EXE_NAME_WINWS2})",
+        "ru": f"RKNHS ({EXE_NAME_WINWS2})",
+        "en": f"RKNHS ({EXE_NAME_WINWS2})",
     },
     "page.dpi_settings.section.zapret1": {
-        "ru": f"Zapret 1 ({EXE_NAME_WINWS1})",
-        "en": f"Zapret 1 ({EXE_NAME_WINWS1})",
+        "ru": f"RKNHS Classic ({EXE_NAME_WINWS1})",
+        "en": f"RKNHS Classic ({EXE_NAME_WINWS1})",
     },
     "page.dpi_settings.option.recommended": {
         "ru": "рекомендуется",
         "en": "recommended",
     },
     "page.dpi_settings.method.zapret2_mode.title": {
-        "ru": "Zapret 2",
-        "en": "Zapret 2",
+        "ru": "RKNHS",
+        "en": "RKNHS",
     },
     "page.dpi_settings.method.zapret2_mode.desc": {
-        "ru": f"Режим Zapret 2 на движке {ENGINE_WINWS2} ({EXE_NAME_WINWS2}) + готовые пресеты для быстрого запуска. Поддерживает Lua-код для своих стратегий.",
-        "en": f"Zapret 2 mode on {ENGINE_WINWS2} ({EXE_NAME_WINWS2}) with ready presets for quick launch. Supports custom Lua code for your own strategies.",
+        "ru": f"Режим RKNHS на движке {ENGINE_WINWS2} ({EXE_NAME_WINWS2}) + готовые пресеты для быстрого запуска. Поддерживает Lua-код для своих стратегий.",
+        "en": f"RKNHS mode on {ENGINE_WINWS2} ({EXE_NAME_WINWS2}) with ready presets for quick launch. Supports custom Lua code for your own strategies.",
     },
     "page.dpi_settings.method.orchestra.title": {
         "ru": "Оркестратор v0.9.6 (Beta)",
@@ -1274,12 +1608,12 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Automatic learning. The system picks the best strategy per domain and remembers results between launches.",
     },
     "page.dpi_settings.method.zapret1_mode.title": {
-        "ru": "Zapret 1",
-        "en": "Zapret 1",
+        "ru": "RKNHS Classic",
+        "en": "RKNHS Classic",
     },
     "page.dpi_settings.method.zapret1_mode.desc": {
-        "ru": f"Режим Zapret 1 на движке {ENGINE_WINWS1} ({EXE_NAME_WINWS1}) + готовые пресеты для быстрого запуска. Не использует Lua-код и блобы.",
-        "en": f"Zapret 1 mode on {ENGINE_WINWS1} ({EXE_NAME_WINWS1}) with ready presets for quick launch. Does not use Lua code or blobs.",
+        "ru": f"Режим RKNHS Classic на движке {ENGINE_WINWS1} ({EXE_NAME_WINWS1}) + готовые пресеты для быстрого запуска. Не использует Lua-код и блобы.",
+        "en": f"RKNHS Classic mode on {ENGINE_WINWS1} ({EXE_NAME_WINWS1}) with ready presets for quick launch. Does not use Lua code or blobs.",
     },
     "page.dpi_settings.discord_restart.title": {
         "ru": "Перезапуск Discord",
@@ -1438,20 +1772,20 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Failed to restore permissions:\n{message}\n\nTry temporarily disabling hosts file protection in antivirus settings (Kaspersky, Dr.Web, etc.).",
     },
     "page.hosts.info.note": {
-        "ru": "Некоторые сервисы (ChatGPT, Spotify и др.) сами блокируют доступ из России — это не блокировка РКН. Решается не через Zapret, а через проксирование: домены направляются через отдельный прокси-сервер в файле hosts.",
-        "en": "Some services (ChatGPT, Spotify, etc.) block access from Russia themselves - this is not a Roskomnadzor block. It is solved not through Zapret but via proxying: domains are routed through a dedicated proxy server in hosts.",
+        "ru": "Некоторые сервисы (ChatGPT, Spotify и др.) сами блокируют доступ из России — это не блокировка РКН. Решается не через RKNHS, а через проксирование: домены направляются через отдельный прокси-сервер в файле hosts.",
+        "en": "Some services (ChatGPT, Spotify, etc.) block access from Russia themselves - this is not a Roskomnadzor block. It is solved not through RKNHS but via proxying: domains are routed through a dedicated proxy server in hosts.",
     },
     "page.hosts.warning.browser_restart": {
         "ru": "После добавления или удаления доменов необходимо перезапустить браузер, чтобы изменения вступили в силу.",
         "en": "After adding or removing domains, restart your browser for changes to take effect.",
     },
     "page.hosts.dialog.clear.title": {
-        "ru": "Очистить записи ZapretGUI?",
-        "en": "Clear ZapretGUI entries?",
+        "ru": "Очистить записи RKNHS?",
+        "en": "Clear RKNHS entries?",
     },
     "page.hosts.dialog.clear.body": {
-        "ru": "Будет удалён только блок записей ZapretGUI. Ручные записи в файле hosts останутся на месте.",
-        "en": "Only the ZapretGUI managed block will be removed. Manual hosts entries will remain untouched.",
+        "ru": "Будет удалён только блок записей RKNHS. Ручные записи в файле hosts останутся на месте.",
+        "en": "Only the RKNHS managed block will be removed. Manual hosts entries will remain untouched.",
     },
     "page.hosts.open.error.title": {
         "ru": "Ошибка",
@@ -2278,8 +2612,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Delete all custom domains ({count})?\n\nSystem domains will remain.",
     },
     "page.premium.subtitle": {
-        "ru": "Управление подпиской Zapret Premium (премиум)",
-        "en": "Manage Zapret Premium subscription",
+        "ru": "Управление подпиской RKNHS Premium (премиум)",
+        "en": "Manage RKNHS Premium subscription",
     },
     "page.premium.section.subscription_status": {
         "ru": "Статус подписки",
@@ -2298,8 +2632,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Actions",
     },
     "page.premium.instructions": {
-        "ru": "1. Нажмите «Создать код»\n2. Отправьте код боту @zapretvpns_bot в Telegram (сообщением)\n3. Вернитесь сюда и нажмите «Проверить статус»",
-        "en": "1. Click \"Create code\"\n2. Send the code to @zapretvpns_bot in Telegram (as a message)\n3. Return here and click \"Refresh status\"",
+        "ru": "1. Нажмите «Создать код»\n2. Отправьте код боту @sazzero в Telegram (сообщением)\n3. Вернитесь сюда и нажмите «Проверить статус»",
+        "en": "1. Click \"Create code\"\n2. Send the code to @sazzero in Telegram (as a message)\n3. Return here and click \"Refresh status\"",
     },
     "page.premium.placeholder.pair_code": {
         "ru": "ABCD12EF",
@@ -2766,8 +3100,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Support",
     },
     "page.support.subtitle": {
-        "ru": "GitHub Discussions и каналы сообщества",
-        "en": "GitHub Discussions and community channels",
+        "ru": "Информация о форке RKNHS",
+        "en": "About the RKNHS fork",
     },
     "page.support.section.discussions": {
         "ru": "GitHub Discussions",
@@ -2826,16 +3160,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Failed to open Discord:\n{error}",
     },
     "page.winws1_control.subtitle": {
-        "ru": f"Настройка и запуск Zapret 1 ({EXE_NAME_WINWS1}). В «Мои пресеты» выбирается пресет, а в «Настройка пресета» меняются профили и выбранные для них готовые стратегии.",
-        "en": f"Configure and launch Zapret 1 ({EXE_NAME_WINWS1}). My presets selects a preset; preset setup changes profiles and ready strategies.",
+        "ru": f"Настройка и запуск RKNHS Classic ({EXE_NAME_WINWS1}). В «Мои пресеты» выбирается пресет, а в «Настройка пресета» меняются профили и выбранные для них готовые стратегии.",
+        "en": f"Configure and launch RKNHS Classic ({EXE_NAME_WINWS1}). My presets selects a preset; preset setup changes profiles and ready strategies.",
     },
     "page.winws1_control.section.status": {
         "ru": "Статус работы",
         "en": "Service Status",
     },
     "page.winws1_control.section.management": {
-        "ru": "Управление Zapret 1",
-        "en": "Zapret 1 Control",
+        "ru": "Управление RKNHS Classic",
+        "en": "RKNHS Classic Control",
     },
     "page.winws1_control.section.presets": {
         "ru": "Пресеты и настройка пресета",
@@ -2915,7 +3249,7 @@ TEXTS: dict[str, dict[str, str]] = {
     },
     "page.winws1_pages.info.body": {
         "ru": "Чтобы запустить zapret напрямую, включите нужные профили, выберите для них готовые стратегии и нажмите «Запустить» на странице управления.",
-        "en": "To start Zapret directly, enable the needed profiles, choose ready strategies for them, and click Start on the control page.",
+        "en": "To start RKNHS directly, enable the needed profiles, choose ready strategies for them, and click Start on the control page.",
     },
     "page.winws1_user_presets.title": {
         "ru": "Мои пресеты",
@@ -3207,27 +3541,28 @@ TEXTS: dict[str, dict[str, str]] = {
     },
     "page.winws1_user_presets.info.body": {
         "ru": (
-            "Пресет, или конфиг, — это один или несколько .txt-файлов со списком флагов Zapret. "
-            "Формат такой же, как у winws2.exe или winws.exe, поэтому GUI может быстро читать и менять настройки.\n\n"
-            "Пресеты доступны с Zapret2 v20.3 для режимов Zapret 1 и Zapret 2. "
-            "Они нужны, чтобы быстрее делать новые настройки, проще обмениваться ими и держать GUI и консольный Zapret в одном формате.\n\n"
-            "При запуске активный пресет передаётся в winws2.exe для Zapret 2 или в winws.exe для Zapret 1 через @<config_file>. "
-            "Это значит: прочитать параметры командной строки из файла. Остальные параметры командной строки при таком запуске не используются.\n\n"
-            "Файл %AppData%\\ZapretTwoDev\\preset-zapret2.txt хранит только активный пресет. "
-            "Сам по себе он не считается пользовательским пресетом. Ваши пресеты лежат в папке presets. "
-            "По умолчанию используется Default, также есть встроенный Gaming.\n\n"
-            "Пресетами можно обмениваться напрямую.\n\n"
-            "Почему пресеты иногда плохо подходят: в них стратегии часто заранее прописаны под разные фильтры и hostlist. "
-            "Из-за этого один сайт может заработать, а другой перестать. Для более точной настройки лучше использовать прямой запуск: "
-            "там стратегия подбирается отдельно для нужной категории и hostlist."
+            "Пресет — это .txt-файл с флагами обхода (hostlist, ipset, desync). "
+            "В RKNHS вы выбираете его в «Мои пресеты»; профили внутри правятся в «Настройка пресета».\n\n"
+            "Не путайте термины:\n"
+            "• пресет — весь конфиг обхода;\n"
+            "• профиль / готовая стратегия — блок аргументов внутри пресета;\n"
+            "• Orchestra — автоподбор стратегии на конкретный хост;\n"
+            "• Blockcheck — тест; «Применить» записывает результат в текущий пресет.\n\n"
+            "Важно: выбор пресета при остановленном обходе только сохраняется. "
+            "Чтобы применить — нажмите «Запустить» на странице управления.\n\n"
+            "Для меньшей нагрузки берите пресеты с пометкой game filter (Лёгкий обход на Control)."
         ),
         "en": (
-            "A preset, or config, is one or more .txt files with Zapret flags. "
-            "It uses the same format as winws2.exe or winws.exe, so the GUI can read and edit these settings.\n\n"
-            "The active preset is passed to winws2.exe for Zapret 2 or winws.exe for Zapret 1 through @<config_file>, "
-            "which means: read command-line options from a file. Other command-line options are not used in this launch mode.\n\n"
-            "%AppData%\\ZapretTwoDev\\preset-zapret2.txt only stores the active preset copy. "
-            "User presets are stored in the presets folder. More details are available from the button below."
+            "A preset is a .txt file of bypass flags (hostlist, ipset, desync). "
+            "In RKNHS you pick it in My presets; profiles are edited in Preset setup.\n\n"
+            "Do not mix terms:\n"
+            "• preset — the full bypass config;\n"
+            "• profile / ready strategy — an argument block inside the preset;\n"
+            "• Orchestra — per-host auto strategy lock;\n"
+            "• Blockcheck — a probe; Apply writes into the current preset.\n\n"
+            "Important: selecting a preset while bypass is stopped only saves it. "
+            "Start bypass on the Control page to apply.\n\n"
+            "For lower load prefer game-filter presets (Light bypass on Control)."
         ),
     },
     "page.winws1_user_presets.info.open_site.button": {
@@ -3247,16 +3582,16 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Control",
     },
     "page.winws2_control.subtitle": {
-        "ru": "Настройка и запуск Zapret 2. В «Мои пресеты» выбирается пресет, а в «Настройка пресета» меняются профили и выбранные для них готовые стратегии.",
-        "en": "Configure and launch Zapret 2. My presets selects a preset; preset setup changes profiles and ready strategies.",
+        "ru": "Настройка и запуск RKNHS. В «Мои пресеты» выбирается пресет, а в «Настройка пресета» меняются профили и выбранные для них готовые стратегии.",
+        "en": "Configure and launch RKNHS. My presets selects a preset; preset setup changes profiles and ready strategies.",
     },
     "page.winws2_control.section.status": {
         "ru": "Статус работы",
         "en": "Service Status",
     },
     "page.winws2_control.section.management": {
-        "ru": "Управление Zapret 2",
-        "en": "Zapret 2 Control",
+        "ru": "Управление RKNHS",
+        "en": "RKNHS Control",
     },
     "page.winws2_control.section.preset_switch": {
         "ru": "Сменить пресет обхода блокировок",
@@ -3287,12 +3622,12 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Detecting process state",
     },
     "page.winws2_control.status.running": {
-        "ru": "Zapret работает",
-        "en": "Zapret is running",
+        "ru": "RKNHS работает",
+        "en": "RKNHS is running",
     },
     "page.winws2_control.status.stopped": {
-        "ru": "Zapret остановлен",
-        "en": "Zapret stopped",
+        "ru": "RKNHS остановлен",
+        "en": "RKNHS stopped",
     },
     "page.winws2_control.status.bypass_active": {
         "ru": "Обход блокировок активен",
@@ -3303,8 +3638,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "en": "Press Start to activate",
     },
     "page.winws2_control.button.start": {
-        "ru": "Запустить Zapret",
-        "en": "Start Zapret",
+        "ru": "Запустить RKNHS",
+        "en": "Start RKNHS",
     },
     "page.winws2_control.button.stop_only_winws": {
         "ru": f"Остановить только {EXE_NAME_WINWS1}",
@@ -3696,27 +4031,28 @@ TEXTS: dict[str, dict[str, str]] = {
     },
     "page.winws2_user_presets.info.body": {
         "ru": (
-            "Пресет, или конфиг, — это один или несколько .txt-файлов со списком флагов Zapret. "
-            "Формат такой же, как у winws2.exe или winws.exe, поэтому GUI может быстро читать и менять настройки.\n\n"
-            "Пресеты доступны с Zapret2 v20.3 для режимов Zapret 1 и Zapret 2. "
-            "Они нужны, чтобы быстрее делать новые настройки, проще обмениваться ими и держать GUI и консольный Zapret в одном формате.\n\n"
-            "При запуске активный пресет передаётся в winws2.exe для Zapret 2 или в winws.exe для Zapret 1 через @<config_file>. "
-            "Это значит: прочитать параметры командной строки из файла. Остальные параметры командной строки при таком запуске не используются.\n\n"
-            "Файл %AppData%\\ZapretTwoDev\\preset-zapret2.txt хранит только активный пресет. "
-            "Сам по себе он не считается пользовательским пресетом. Ваши пресеты лежат в папке presets. "
-            "По умолчанию используется Default, также есть встроенный Gaming.\n\n"
-            "Пресетами можно обмениваться напрямую.\n\n"
-            "Почему пресеты иногда плохо подходят: в них стратегии часто заранее прописаны под разные фильтры и hostlist. "
-            "Из-за этого один сайт может заработать, а другой перестать. Для более точной настройки лучше использовать прямой запуск: "
-            "там стратегия подбирается отдельно для нужной категории и hostlist."
+            "Пресет — это .txt-файл с флагами обхода (hostlist, ipset, desync, Lua). "
+            "В RKNHS вы выбираете его в «Мои пресеты»; профили внутри правятся в «Настройка пресета».\n\n"
+            "Не путайте термины:\n"
+            "• пресет — весь конфиг обхода;\n"
+            "• профиль / готовая стратегия — блок аргументов внутри пресета;\n"
+            "• Orchestra — автоподбор стратегии на конкретный хост;\n"
+            "• Blockcheck — тест; «Применить» записывает результат в текущий пресет.\n\n"
+            "Важно: выбор пресета при остановленном обходе только сохраняется. "
+            "Чтобы применить — нажмите «Запустить» на странице управления.\n\n"
+            "Для меньшей нагрузки берите пресеты с пометкой game filter (Лёгкий обход на Control)."
         ),
         "en": (
-            "A preset, or config, is one or more .txt files with Zapret flags. "
-            "It uses the same format as winws2.exe or winws.exe, so the GUI can read and edit these settings.\n\n"
-            "The active preset is passed to winws2.exe for Zapret 2 or winws.exe for Zapret 1 through @<config_file>, "
-            "which means: read command-line options from a file. Other command-line options are not used in this launch mode.\n\n"
-            "%AppData%\\ZapretTwoDev\\preset-zapret2.txt only stores the active preset copy. "
-            "User presets are stored in the presets folder. More details are available from the button below."
+            "A preset is a .txt file of bypass flags (hostlist, ipset, desync, Lua). "
+            "In RKNHS you pick it in My presets; profiles are edited in Preset setup.\n\n"
+            "Do not mix terms:\n"
+            "• preset — the full bypass config;\n"
+            "• profile / ready strategy — an argument block inside the preset;\n"
+            "• Orchestra — per-host auto strategy lock;\n"
+            "• Blockcheck — a probe; Apply writes into the current preset.\n\n"
+            "Important: selecting a preset while bypass is stopped only saves it. "
+            "Start bypass on the Control page to apply.\n\n"
+            "For lower load prefer game-filter presets (Light bypass on Control)."
         ),
     },
     "page.winws2_user_presets.info.open_site.button": {
@@ -4172,12 +4508,12 @@ TEXTS_EXTRA: dict[str, dict[str, str]] = {
         "en": "The selected preset has no profiles to show on this page. Try another preset or add the needed profile.",
     },
     "page.winws2_pages.request.hint": {
-        "ru": "Хотите добавить новый сайт или сервис в Zapret 2? Откройте готовую форму на GitHub и опишите, что нужно добавить в hostlist или ipset.",
-        "en": "Want to add a new site or service to Zapret 2? Open the GitHub form and describe what should be added to the hostlist or ipset.",
+        "ru": "Хотите добавить новый сайт или сервис в RKNHS? Откройте готовую форму на GitHub и опишите, что нужно добавить в hostlist или ipset.",
+        "en": "Want to add a new site or service to RKNHS? Open the GitHub form and describe what should be added to the hostlist or ipset.",
     },
     "page.winws2_pages.empty.no_presets": {
-        "ru": "Пресеты Zapret 2 не найдены. Импортируйте пресет или переустановите приложение, чтобы вернуть встроенные пресеты.",
-        "en": "Zapret 2 presets were not found. Import a preset or reinstall the app to restore built-in presets.",
+        "ru": "Пресеты RKNHS не найдены. Импортируйте пресет или переустановите приложение, чтобы вернуть встроенные пресеты.",
+        "en": "RKNHS presets were not found. Import a preset or reinstall the app to restore built-in presets.",
     },
     "page.winws2_pages.empty.no_selected_preset": {
         "ru": "Не удалось понять, какой пресет выбран. Откройте «Мои пресеты» и выберите preset заново.",
@@ -4210,8 +4546,8 @@ TEXTS.update(TEXTS_EXTRA)
 
 TEXTS_PAGES_FINAL: dict[str, dict[str, str]] = {
     "page.about.app_name": {
-        "ru": "Zapret 2 GUI",
-        "en": "Zapret 2 GUI",
+        "ru": "RKNHS",
+        "en": "RKNHS",
     },
     "common.badge.premium": {
         "ru": "⭐ Premium",
@@ -4386,8 +4722,8 @@ TEXTS_PAGES_FINAL: dict[str, dict[str, str]] = {
         "en": "Auto-start DPI after app launch",
     },
     "page.winws2_control.setting.autostart.desc": {
-        "ru": "После запуска ZapretGUI автоматически запускать текущий DPI-режим",
-        "en": "Automatically start the current DPI mode after ZapretGUI launches",
+        "ru": "После запуска RKNHS автоматически запускать текущий DPI-режим",
+        "en": "Automatically start the current DPI mode after RKNHS launches",
     },
     "page.winws2_control.strategy.autostart_disabled": {
         "ru": "Автозапуск DPI после старта программы отключён",
@@ -4406,6 +4742,7 @@ NAV_PAGE_TEXT_KEYS: dict[PageName, str] = {
     PageName.DPI_SETTINGS: "nav.page.dpi_settings",
     PageName.NETWORK: "nav.page.network",
     PageName.HOSTS: "nav.page.hosts",
+    PageName.VPN_SPLIT: "nav.page.vpn_split",
     PageName.BLOCKCHECK: "nav.page.blockcheck",
     PageName.APPEARANCE: "nav.page.appearance",
     PageName.PREMIUM: "nav.page.premium",
@@ -4430,24 +4767,26 @@ def normalize_language(language: str | None) -> str:
 
 
 def tr(key: str, language: str | None = None, default: str | None = None) -> str:
+    from app.branding import apply_ui_branding
+
     lang = normalize_language(language)
     values = TEXTS.get(key)
     if not values:
-        return default if default is not None else key
+        return apply_ui_branding(default if default is not None else key)
 
     value = values.get(lang)
     if isinstance(value, str) and value:
-        return value
+        return apply_ui_branding(value)
 
     fallback = values.get(DEFAULT_UI_LANGUAGE)
     if isinstance(fallback, str) and fallback:
-        return fallback
+        return apply_ui_branding(fallback)
 
     for candidate in values.values():
         if isinstance(candidate, str) and candidate:
-            return candidate
+            return apply_ui_branding(candidate)
 
-    return default if default is not None else key
+    return apply_ui_branding(default if default is not None else key)
 
 
 def _text_variants(key: str | None) -> tuple[str, ...]:

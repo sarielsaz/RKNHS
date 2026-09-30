@@ -1261,16 +1261,16 @@ class HostsPage(BasePage):
         if MessageBox is not None:
             body = self._tr(
                 "page.hosts.dialog.clear.body",
-                "Будет удалён только блок записей ZapretGUI. Ручные записи в файле hosts останутся на месте.",
+                "Будет удалён только блок записей RKNHS. Ручные записи в файле hosts останутся на месте.",
             )
             box = MessageBox(
-                self._tr("page.hosts.dialog.clear.title", "Очистить записи ZapretGUI?"),
+                self._tr("page.hosts.dialog.clear.title", "Очистить записи RKNHS?"),
                 body,
                 self.window(),
             )
             set_message_box_button_accessibility(
                 box,
-                yes_name="Очистить записи ZapretGUI из hosts",
+                yes_name="Очистить записи RKNHS из hosts",
                 yes_description=body,
                 cancel_name="Отменить очистку hosts",
                 cancel_description="Закрывает диалог без очистки hosts.",

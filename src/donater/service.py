@@ -16,6 +16,11 @@ REQUEST_TIMEOUT = 5
 AUTO_NETWORK_RETRY_COOLDOWN_SEC = 30
 PAIR_CODE_TTL_MINUTES = 10
 
+# Локальный override: не ходить на сервер подписки, всегда считать Premium активным.
+# Поставь False, если нужна штатная проверка через @sazzero.
+FORCE_PREMIUM_ACTIVE = True
+FORCE_PREMIUM_DAYS_REMAINING = 365
+
 
 def _safe_int(value: Any) -> int:
     try:
@@ -551,6 +556,19 @@ class PremiumService:
             )
 
     def check_device_activation(self, *, use_cache: bool = False, automatic: bool = False) -> Dict[str, Any]:
+        if FORCE_PREMIUM_ACTIVE:
+            return {
+                "found": True,
+                "activated": True,
+                "is_premium": True,
+                "days_remaining": FORCE_PREMIUM_DAYS_REMAINING,
+                "status": "Premium активен",
+                "expires_at": None,
+                "level": "Premium",
+                "subscription_level": "zapretik",
+                "source": "local_override",
+            }
+
         st = self.check_status(allow_network=not use_cache, automatic=automatic)
         found = st.is_linked if st.is_linked is not None else (PremiumStorage.get_device_token() is not None)
         return {

@@ -347,9 +347,12 @@ class Winws2StrategyRunner(StrategyRunnerBase):
         return prepared.text
 
     def _build_winws2_at_config_text(self, prepared_text: str) -> str:
+        from .args_filters import apply_all_filters
+
         args = launch_args_from_preset_text(prepared_text)
         if not args:
             return ""
+        args = apply_all_filters(args, self.lists_dir)
         return "\n".join(shlex.quote(arg) for arg in args) + "\n"
 
     def _winws2_at_config_dir(self) -> str:

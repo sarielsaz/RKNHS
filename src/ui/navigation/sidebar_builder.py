@@ -726,6 +726,13 @@ def init_navigation(window) -> None:
     _bind_sidebar_expanded_state(window)
     _refresh_existing_nav_mode_visibility(window, current_method)
     apply_nav_visibility_filter(window, method=current_method)
+    try:
+        from ui.tech_style import apply_tech_style_to_window, invalidate_tech_style_cache
+
+        invalidate_tech_style_cache()
+        apply_tech_style_to_window(window)
+    except Exception:
+        pass
 
 
 def sync_nav_visibility(window, method: str | None = None) -> None:

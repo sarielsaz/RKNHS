@@ -4,13 +4,14 @@ from PyQt6.QtGui import QIcon
 
 from qfluentwidgets import PushButton, TransparentPushButton
 from ui.accessibility import set_control_accessibility, set_state_text
-from ui.theme import get_themed_qta_icon
+from ui.theme import get_themed_qta_icon, get_theme_tokens
+from ui.tech_style import build_ghost_button_qss, build_primary_button_qss
 
 
 _DANGER_BUTTON_QSS = (
-    "QPushButton{background-color:#c42b1c;color:white;border:none;border-radius:5px;}"
-    "QPushButton:hover{background-color:#a52014;}"
-    "QPushButton:pressed{background-color:#8e1a10;}"
+    "QPushButton{background-color:#FF5C7A;color:#0A0C10;border:none;border-radius:2px;}"
+    "QPushButton:hover{background-color:#ff7a92;}"
+    "QPushButton:pressed{background-color:#e04562;}"
 )
 
 
@@ -43,7 +44,7 @@ def create_dialog_action_button(
 
     button = PushButton(parent)
     button.setText(text)
-    button.setMinimumHeight(36)
+    button.setMinimumHeight(34)
     _configure_button_icon(button, icon_name, icon_color)
     set_state_text(button, text)
     set_control_accessibility(
@@ -55,6 +56,11 @@ def create_dialog_action_button(
     if danger:
         try:
             button.setStyleSheet(_DANGER_BUTTON_QSS)
+        except Exception:
+            pass
+    else:
+        try:
+            button.setStyleSheet(build_ghost_button_qss(get_theme_tokens()))
         except Exception:
             pass
 
@@ -72,6 +78,7 @@ def create_dialog_cancel_button(
 
     button = TransparentPushButton(parent)
     button.setText(text)
+    button.setMinimumHeight(34)
     _configure_button_icon(button, icon_name, icon_color)
     set_state_text(button, text)
     set_control_accessibility(
@@ -79,4 +86,8 @@ def create_dialog_cancel_button(
         name=text,
         description="Закрывает диалог без выполнения действия.",
     )
+    try:
+        button.setStyleSheet(build_ghost_button_qss(get_theme_tokens()))
+    except Exception:
+        pass
     return button

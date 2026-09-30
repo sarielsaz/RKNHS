@@ -44,6 +44,7 @@ from settings.schema import (
     TRAY_CLOSE_MODE_NORMAL as _TRAY_CLOSE_MODE_NORMAL,
     VALID_TRAY_CLOSE_MODES as _VALID_TRAY_CLOSE_MODES,
     build_default_settings as _build_default_settings,
+    default_license as _default_license,
 )
 from utils.atomic_text import atomic_write_text
 
@@ -453,6 +454,144 @@ def set_max_blocked(value: bool) -> bool:
     return _set_bool(("program", "max_blocked"), value)
 
 
+def get_isp_auto_preset_enabled() -> bool:
+    return _get_bool(("program", "isp_auto_preset_enabled"), True)
+
+
+def set_isp_auto_preset_enabled(value: bool) -> bool:
+    return _set_bool(("program", "isp_auto_preset_enabled"), value)
+
+
+def get_isp_auto_preset_applied() -> bool:
+    return _get_bool(("program", "isp_auto_preset_applied"), False)
+
+
+def set_isp_auto_preset_applied(value: bool) -> bool:
+    return _set_bool(("program", "isp_auto_preset_applied"), value)
+
+
+def get_active_scenario_id() -> str:
+    return _get_str(("program", "active_scenario_id"), "")
+
+
+def set_active_scenario_id(value: str) -> bool:
+    return _set_str(("program", "active_scenario_id"), str(value or "").strip())
+
+
+def get_service_dashboard_ids() -> list[str]:
+    values = _get_path_value(read_settings(), ("program", "service_dashboard_ids"), [])
+    if not isinstance(values, list):
+        return []
+    return [str(item).strip() for item in values if str(item or "").strip()]
+
+
+def set_service_dashboard_ids(values: list[str]) -> bool:
+    normalized = [str(item).strip() for item in values if str(item or "").strip()]
+
+    def _apply(settings: dict) -> dict:
+        program = dict(settings.get("program") or {})
+        program["service_dashboard_ids"] = normalized
+        settings["program"] = program
+        return settings
+
+    _update_settings(_apply)
+    return True
+
+
+def get_vpn_split_enabled() -> bool:
+    return _get_bool(("vpn_split", "enabled"), False)
+
+
+def set_vpn_split_enabled(value: bool) -> bool:
+    return _set_bool(("vpn_split", "enabled"), value)
+
+
+def get_vpn_split_config_path() -> str:
+    return _get_str(("vpn_split", "config_path"), "")
+
+
+def set_vpn_split_config_path(value: str) -> bool:
+    return _set_str(("vpn_split", "config_path"), str(value or "").strip())
+
+
+def get_vpn_split_cli_tunnel_installed() -> bool:
+    return _get_bool(("vpn_split", "cli_tunnel_installed"), False)
+
+
+def set_vpn_split_cli_tunnel_installed(value: bool) -> bool:
+    return _set_bool(("vpn_split", "cli_tunnel_installed"), value)
+
+
+def get_vpn_split_rules() -> list[dict]:
+    data = _get_path_value(read_settings(), ("vpn_split", "rules"), [])
+    if not isinstance(data, list):
+        return []
+    return [dict(item) for item in data if isinstance(item, dict)]
+
+
+def set_vpn_split_rules(rules: list[dict]) -> bool:
+    normalized = [dict(item) for item in rules if isinstance(item, dict)]
+
+    def _apply(settings: dict) -> dict:
+        block = dict(settings.get("vpn_split") or {})
+        block["rules"] = normalized
+        settings["vpn_split"] = block
+        return settings
+
+    _update_settings(_apply)
+    return True
+
+
+def add_vpn_split_rule(domain: str) -> bool:
+    from vpn_split.domain_patterns import normalize_domain_pattern
+
+    clean = normalize_domain_pattern(domain)
+    if not clean:
+        return False
+    rules = get_vpn_split_rules()
+    if any(str(item.get("domain") or "").lower() == clean for item in rules):
+        return False
+    rules.append({"domain": clean, "enabled": True, "ips": [], "updated_at": 0})
+    return set_vpn_split_rules(rules)
+
+
+def remove_vpn_split_rule(domain: str) -> bool:
+    from vpn_split.domain_patterns import normalize_domain_pattern
+
+    clean = normalize_domain_pattern(domain) or str(domain or "").strip().lower()
+    rules = [item for item in get_vpn_split_rules() if str(item.get("domain") or "").lower() != clean]
+    return set_vpn_split_rules(rules)
+
+
+def remove_vpn_split_rules(domains: list[str]) -> int:
+    """Remove many domains at once. Returns how many were removed."""
+    from vpn_split.domain_patterns import normalize_domain_pattern
+
+    targets: set[str] = set()
+    for domain in domains or []:
+        clean = normalize_domain_pattern(domain) or str(domain or "").strip().lower()
+        if clean:
+            targets.add(clean)
+    if not targets:
+        return 0
+    before = get_vpn_split_rules()
+    after = [item for item in before if str(item.get("domain") or "").lower() not in targets]
+    removed = len(before) - len(after)
+    if removed:
+        set_vpn_split_rules(after)
+    return removed
+
+
+def clear_vpn_split_rules() -> int:
+    """Delete all VPN Split domain rules. Returns previous count."""
+    before = get_vpn_split_rules()
+    count = len(before)
+    if count:
+        set_vpn_split_rules([])
+    return count
+
+
+
 def set_defender_disabled_memory(value: bool) -> bool:
     return _set_bool(("program", "defender_disabled"), value)
 
@@ -684,6 +823,14 @@ def set_isp_dns_info_shown(value: bool) -> bool:
     return _set_bool(("warnings", "isp_dns_info_shown"), value)
 
 
+def get_preset_guide_seen() -> bool:
+    return _get_bool(("warnings", "preset_guide_seen"), False)
+
+
+def set_preset_guide_seen(value: bool = True) -> bool:
+    return _set_bool(("warnings", "preset_guide_seen"), value)
+
+
 def get_tg_proxy_deeplink_done() -> bool:
     return _get_bool(("warnings", "tg_proxy_deeplink_done"), False)
 
@@ -885,6 +1032,43 @@ def set_premium_cache(cache: dict[str, Any] | None) -> bool:
             copy.deepcopy(cache) if isinstance(cache, dict) else None,
         )
     )
+    return True
+
+
+def get_license_record() -> dict[str, Any]:
+    record = _get_path_value(read_settings(), ("license",), None)
+    if isinstance(record, dict):
+        return copy.deepcopy(record)
+    return copy.deepcopy(_default_license())
+
+
+def set_license_record(
+    *,
+    key: str,
+    name: str,
+    perpetual: bool,
+    expires_at: str | None,
+    machine_id: str,
+) -> bool:
+    from datetime import datetime, timezone
+
+    stamp = datetime.now(timezone.utc).isoformat()
+
+    def _mutator(data: dict[str, Any]) -> None:
+        block = data.setdefault("license", copy.deepcopy(_default_license()))
+        block["key"] = str(key or "").strip()
+        block["name"] = str(name or "").strip()
+        block["perpetual"] = bool(perpetual)
+        block["expires_at"] = expires_at
+        block["machine_id"] = str(machine_id or "").strip()
+        block["activated_at"] = stamp
+
+    _update_settings(_mutator)
+    return True
+
+
+def clear_license_record() -> bool:
+    _update_settings(lambda data: data.__setitem__("license", copy.deepcopy(_default_license())))
     return True
 
 
@@ -1330,9 +1514,14 @@ __all__ = [
     "get_hosts_bootstrap_signature",
     "get_hosts_selection",
     "get_isp_dns_info_shown",
+    "get_isp_auto_preset_applied",
+    "get_isp_auto_preset_enabled",
+    "get_active_scenario_id",
+    "get_license_record",
     "get_kaspersky_warning_disabled",
     "get_max_blocked",
     "get_mica_enabled",
+    "get_preset_guide_seen",
     "get_orchestra_auto_restart_on_discord_fail",
     "get_orchestra_discord_fails_for_restart",
     "get_orchestra_history",
@@ -1428,9 +1617,14 @@ __all__ = [
     "set_hosts_bootstrap_signature",
     "set_hosts_selection",
     "set_isp_dns_info_shown",
+    "set_isp_auto_preset_applied",
+    "set_isp_auto_preset_enabled",
+    "set_active_scenario_id",
+    "set_license_record",
     "set_kaspersky_warning_disabled",
     "set_max_blocked",
     "set_mica_enabled",
+    "set_preset_guide_seen",
     "set_orchestra_auto_restart_on_discord_fail",
     "set_orchestra_discord_fails_for_restart",
     "set_orchestra_history",
@@ -1494,5 +1688,6 @@ __all__ = [
     "set_ui_language",
     "set_window_geometry",
     "set_window_opacity",
+    "clear_license_record",
     "clear_selected_source_preset_file_name",
 ]

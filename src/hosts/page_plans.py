@@ -159,10 +159,12 @@ def build_page_init_plan(
 
 
 def build_activation_plan(*, catalog_dirty: bool) -> HostsActivationPlan:
+    dirty = bool(catalog_dirty)
+    # Repeat visits: skip full invalidate/rebuild unless catalog changed while hidden.
     return HostsActivationPlan(
-        reconcile_hidden_refresh=bool(catalog_dirty),
-        invalidate_cache=True,
-        update_ui=True,
+        reconcile_hidden_refresh=dirty,
+        invalidate_cache=dirty,
+        update_ui=dirty,
     )
 
 

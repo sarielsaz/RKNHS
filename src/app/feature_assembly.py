@@ -141,6 +141,7 @@ def build_app_features(*, deps: AppFeatureAssemblyDeps, paths: Any, state: Any) 
         deps=deps.tray,
         runtime_feature=runtime_feature,
         telegram_proxy_feature=telegram_proxy_feature,
+        presets_feature=preset_profile.presets,
     )
     emit_startup_metric(
         "StartupFeatureAssemblyTray",

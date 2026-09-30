@@ -1546,7 +1546,7 @@ class StrategyScanner:
         if int(error_code or 0) == 1058:
             self._cb.on_log(
                 "  Сканирование остановлено: служба WinDivert/Monkey отключена или не может быть "
-                "восстановлена. Запустите Zapret от имени администратора и повторите подбор."
+                "восстановлена. Запустите RKNHS от имени администратора и повторите подбор."
             )
             self._cancelled = True
         return False

@@ -71,6 +71,7 @@ SEARCH_ENTRIES: tuple[SearchEntry, ...] = (
     SearchEntry("blockcheck.strategy_sort.title", PageName.BLOCKCHECK, "page.strategy_sort.title", section_key="page.blockcheck.tab.strategy_scan", tab_key="strategy_scan"),
     SearchEntry("hosts.title", PageName.HOSTS, "page.hosts.title"),
     SearchEntry("hosts.services", PageName.HOSTS, "page.hosts.services", section_key="page.hosts.services"),
+    SearchEntry("vpn_split.title", PageName.VPN_SPLIT, "page.vpn_split.title", keywords=("vpn", "amnezia", "wireguard", "split")),
     SearchEntry("blockcheck.title", PageName.BLOCKCHECK, "page.blockcheck.title"),
     SearchEntry("blockcheck.monitoring", PageName.BLOCKCHECK, "page.blockcheck.monitoring", section_key="page.blockcheck.monitoring"),
     SearchEntry("appearance.title", PageName.APPEARANCE, "page.appearance.title"),
@@ -361,6 +362,13 @@ def find_search_entries(
     for entry in (*SEARCH_ENTRIES, *tuple(extra_entries or ())):
         if visible_pages is not None and entry.page_name not in visible_pages:
             continue
+        try:
+            from app.branding import HIDE_DONATE_NAV
+
+            if HIDE_DONATE_NAV and entry.page_name == PageName.PREMIUM:
+                continue
+        except Exception:
+            pass
 
         score = 0
 

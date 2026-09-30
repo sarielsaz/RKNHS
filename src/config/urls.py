@@ -1,14 +1,18 @@
-# URLs for updates and documentation
-#VERSION_URL = "https://nozapret.ru/dev.json"  # URL для проверки обновлений
-#EXE_UPDATE_URL = "https://nozapret.ru/main.exe"  # URL для скачивания обновления EXE
-DOCS_URL = "https://publish.obsidian.md/zapret/Privacy/Zapret/home"  # Основная документация
-INFO_URL = "https://publish.obsidian.md/zapret/Privacy/Zapret/home"  # URL с информацией о программе
-PRESET_INFO_URL = "https://publish.obsidian.md/zapret/Privacy/Zapret2/preset"  # URL о пресетах
-PROFILE_INFO_URL = "https://publish.obsidian.md/zapret/Privacy/Zapret2/filter"  # URL о профилях
-ANDROID_URL = "https://publish.obsidian.md/zapret/Privacy/Zapret/android"  # URL инструкции для Android
-BOLVAN_URL = "https://github.com/bol-van/zapret-win-bundle"  # URL автора
-SUPPORT_DISCUSSIONS_URL = "https://github.com/youtubediscord/zapret/discussions"  # Основная ссылка поддержки
-BLOCKCHECK_DISCUSSIONS_URL = "https://github.com/youtubediscord/zapret/discussions/categories/blockcheck"  # Категория обращений по BlockCheck
-PROFILE_REQUEST_FORM_URL = "https://github.com/youtubediscord/zapret/issues/new?template=hostlist_ipset_request.yml"  # Форма заявки на hostlist/ipset
+# URLs used by the desktop UI (RKNHS).
+# External upstream project links are intentionally not used.
 
-OTHER_LIST_URL = "https://nozapret.ru/other.txt" 
+AUTHOR_URL = "https://github.com/Sazzero"
+
+#VERSION_URL = ""  # URL для проверки обновлений
+#EXE_UPDATE_URL = ""  # URL для скачивания обновления EXE
+DOCS_URL = AUTHOR_URL
+INFO_URL = AUTHOR_URL
+PRESET_INFO_URL = AUTHOR_URL
+PROFILE_INFO_URL = AUTHOR_URL
+ANDROID_URL = AUTHOR_URL
+BOLVAN_URL = AUTHOR_URL
+SUPPORT_DISCUSSIONS_URL = AUTHOR_URL
+BLOCKCHECK_DISCUSSIONS_URL = AUTHOR_URL
+PROFILE_REQUEST_FORM_URL = AUTHOR_URL
+
+OTHER_LIST_URL = ""

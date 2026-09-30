@@ -81,16 +81,16 @@ def _get_sidebar_search_nav_widget_cls():
             )
             set_control_accessibility(
                 self,
-                name="Глобальный поиск по ZapretGUI",
+                name="Глобальный поиск по RKNHS",
                 description=search_description,
             )
-            set_state_text(self, "Глобальный поиск по ZapretGUI")
+            set_state_text(self, "Глобальный поиск по RKNHS")
             set_control_accessibility(
                 self._search,
-                name="Глобальный поиск по ZapretGUI",
+                name="Глобальный поиск по RKNHS",
                 description=search_description,
             )
-            set_state_text(self._search, "Глобальный поиск по ZapretGUI")
+            set_state_text(self._search, "Глобальный поиск по RKNHS")
             try:
                 self._search.setClearButtonEnabled(True)
             except Exception:
@@ -108,7 +108,7 @@ def _get_sidebar_search_nav_widget_cls():
 
         def clear(self) -> None:
             self._search.clear()
-            self.set_keyboard_result_text("Глобальный поиск по ZapretGUI")
+            self.set_keyboard_result_text("Глобальный поиск по RKNHS")
 
         def text(self) -> str:
             return self._search.text()
@@ -120,7 +120,7 @@ def _get_sidebar_search_nav_widget_cls():
             self._search.setCompleter(completer)
 
         def set_keyboard_result_text(self, text: str) -> None:
-            value = str(text or "").strip() or "Глобальный поиск по ZapretGUI"
+            value = str(text or "").strip() or "Глобальный поиск по RKNHS"
             set_state_text(self, value)
             set_state_text(self._search, value)
 
